@@ -34,8 +34,10 @@ SYM = ('H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co N
        'Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb '
        'Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es').split()
 SKIP = {'At', 'Fr'}
-# Wo das Hauptbild des Artikels kein Foto des Elements ist: Commons-Datei hier fest eintragen.
-DATEI = {}
+# Wo der Artikel kein Hauptbild hat oder es kein Foto des Elements ist: Commons-Datei hier fest eintragen.
+# Ohne Foto bleiben Promethium, Radon und Curium (auf Commons kein freies Foto; «Curium.jpg» auf en.wikipedia ist
+# nur Fair Use und darf nicht übernommen werden); die Seite erklärt das im Atom-Fenster (NOFOTO in showFoto).
+DATEI = {'Hf': 'Hf-crystal bar.jpg'}
 
 
 def get(url, binary=False):

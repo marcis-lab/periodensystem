@@ -3741,10 +3741,15 @@ let FOTOS=null;
 const fotosLaden=()=>FOTOS||(FOTOS=fetch('/bilder/bilder.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{}).catch(()=>({})));
 async function showFoto(e){
   const f=$('a-foto');
-  if(e.z>=100||e.s==='At'||e.s==='Fr'){
+  const NOFOTO={At:'ist so radioaktiv und selten, dass noch nie genug davon zusammenkam, um es zu sehen.',
+    Fr:'ist so radioaktiv und selten, dass noch nie genug davon zusammenkam, um es zu sehen.',
+    Pm:'kommt in der Natur praktisch nicht vor und wird nur in winzigen, stark strahlenden Mengen hergestellt.',
+    Rn:'ist ein farbloses, radioaktives Gas. Man weist es nur mit Messgeräten nach.',
+    Cm:'wird nur in winzigen Mengen in Reaktoren erbrütet; es gibt kein frei verwendbares Foto davon.'};
+  if(e.z>=100||NOFOTO[e.s]){
     f.className='elfoto none'; f.hidden=false;
     f.textContent=e.z>=100?`Kein Foto: Von ${e.name} wurden bisher nur einzelne Atome hergestellt. Sie zerfallen, bevor man sie sehen könnte.`
-      :`Kein Foto: ${e.name} ist so radioaktiv und selten, dass noch nie genug davon zusammenkam, um es zu sehen.`;
+      :`Kein Foto: ${e.name} ${NOFOTO[e.s]}`;
     return; }
   const man=await fotosLaden(); if(current!==e) return;
   const b=man[e.s]; if(!b){ f.hidden=true; f.innerHTML=''; return; }
