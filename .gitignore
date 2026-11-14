@@ -1,0 +1,4 @@
+# Lokale Claude-Einstellungen (Vorschau-Server) nicht veröffentlichen
+.claude/
+.DS_Store
+Thumbs.db
