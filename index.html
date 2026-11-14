@@ -272,6 +272,9 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
   dl.facts{grid-template-columns:auto 1fr;font-size:12px}
 }
 @media (prefers-reduced-motion:reduce){.wrap,.card,.shells span{animation:none}}
+/* Lexikon-Knopf in der oberen Leiste */
+.bar [data-lexikon]{display:contents}
+.bar .lx-btn{align-self:stretch}
 </style>
 </head>
 <body>
@@ -280,6 +283,7 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
 
 <div class="bar" id="bar">
   <div class="brand glass"><h1>Periodensystem 3D</h1><span>Element anklicken = Atom öffnen</span></div>
+  <span data-lexikon></span>
   <div class="seg glass" role="group" aria-label="Anordnung">
     <button id="l-table" aria-pressed="true">Tabelle</button>
     <button id="l-sphere" aria-pressed="false">Kugel</button>
@@ -3521,6 +3525,11 @@ function frame(now){
   requestAnimationFrame(frame);
   openFromHash(); openClassFromHash();
 })();
+
+/* Direktlink auf ein Element (vom Lexikon): #el=Fe */
+function openElFromHash(){ const m=location.hash.match(/^#el=([A-Z][a-z]?)$/); if(m && ELS[m[1]]) openAtom(ELS[m[1]]); }
+addEventListener('hashchange',openElFromHash); openElFromHash();
 </script>
+<script src="https://mindblow.thinklabs.workers.dev/lexikon/lexikon.js" data-site="periodensystem" defer></script>
 </body>
 </html>

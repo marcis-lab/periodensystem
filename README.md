@@ -36,3 +36,9 @@ Cloudflare Worker `periodensystem`, online unter https://periodensystem.thinklab
 
 Cloudflare ist direkt mit diesem GitHub-Repo verbunden: **Jeder Push auf `main` wird automatisch veröffentlicht.**
 Nichts von Hand hochladen. Konfiguration: `wrangler.jsonc` (Worker `worker.js` + Durable Object `Klasse`), ausgeschlossene Dateien: `.assetsignore` (als Seite geht nur `index.html` mit den Favicons online).
+
+## Lexikon-Verbund
+
+Die Seite ist mit mindblow, Weltgeschichte und Bibel verstehen verbunden (Knopf «Lexikon» in der oberen Leiste, Skript von
+mindblow). Der Suchindex `lexikon.json` entsteht aus den Elementdaten in `index.html`: `node tools/lexikon.mjs`.
+Direktlink auf ein Element: `#el=Fe`.
