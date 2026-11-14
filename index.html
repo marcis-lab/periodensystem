@@ -377,6 +377,21 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-size:13px;font-variant-numer
 #les-back .btn{flex:none}
 @media (max-width:600px){#les-back span{display:none}}
 
+/* Molekül-Galerie */
+.galq{width:100%;box-sizing:border-box;background:var(--glass-strong);color:var(--fg);border:1px solid var(--line-2);border-radius:12px;padding:9px 12px;font:400 14px var(--f-body);margin-bottom:8px}
+.galq:focus{outline:none;border-color:var(--blue)}
+.gal-f{justify-content:flex-start;pointer-events:auto;margin-bottom:8px}
+.gal-f .chip{font-size:12.5px;padding:6px 11px}
+.galgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.galgrid button{all:unset;box-sizing:border-box;cursor:pointer;border:1px solid var(--line);background:var(--sunk);border-radius:12px;padding:8px 10px;display:grid;gap:1px;transition:border-color .2s}
+.galgrid button:hover,.galgrid button:focus-visible{border-color:var(--blue)}
+.galgrid button[aria-pressed="true"]{border-color:var(--fg);background:var(--fg);color:var(--bg)}
+.galgrid b{font:600 15px var(--f-display)}
+.galgrid span{font-size:12px;opacity:.75;line-height:1.25}
+#m-modes{overflow-x:auto;scrollbar-width:none;max-width:calc(100% - 34px)}
+#m-modes::-webkit-scrollbar{display:none}
+#m-modes button{flex:none}
+
 /* Lexikon-Knopf in der oberen Leiste */
 .bar [data-lexikon]{display:contents}
 .bar .lx-btn{align-self:stretch}
@@ -596,6 +611,7 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-size:13px;font-variant-numer
     </div>
     <div class="side">
       <div class="modes" id="m-modes" role="group" aria-label="Modus">
+        <button data-m="gal" aria-pressed="false">🔍 Galerie</button>
         <button data-m="build" aria-pressed="true">🧪 Bauen</button>
         <button data-m="level" aria-pressed="false">🎯 Aufgaben</button>
         <button data-m="react" aria-pressed="false">💥 Reaktionen</button>
@@ -617,6 +633,17 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-size:13px;font-variant-numer
           <div class="mini"><button id="kit-3d">🧊 In 3D ansehen</button><button id="kit-iso">🔀 Andere Anordnung</button><button id="kit-tip">💡 Tipp</button><button id="kit-share">🔗 Teilen</button></div>
           <div><div class="label" id="found-label">Entdeckt</div><div class="molchips" id="mol-list"></div></div>
           <details class="badges"><summary>🏅 Abzeichen <span id="bd-count"></span></summary><div class="bgrid" id="bd-grid"></div></details>
+        </div>
+      </div>
+      <div class="sec" id="sec-gal" hidden>
+        <div class="fact" id="gal-desc"></div>
+        <dl class="facts" id="gal-facts"></dl>
+        <div class="mini"><button id="gal-build">🧪 Selbst bauen</button></div>
+        <div>
+          <div class="label" id="gal-label">Alle Moleküle</div>
+          <input type="search" id="gal-q" class="galq" placeholder="Suchen: Wasser, CO₂, Säure …" autocomplete="off" aria-label="Molekül suchen">
+          <div class="chips gal-f" id="gal-f" role="group" aria-label="Filter"></div>
+          <div class="galgrid" id="gal-list"></div>
         </div>
       </div>
       <div class="sec" id="sec-react" hidden>
@@ -1297,10 +1324,10 @@ function fillSide(e){
   rows.push(['Im Universum',ab[0]!=null?fmtPct(ab[0]):'Spuren'],['In der Erdkruste',ab[1]!=null?fmtPct(ab[1]):'Spuren'],['Im Körper',ab[2]!=null?fmtPct(ab[2]):'–']);
   document.getElementById('a-facts').innerHTML=rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
   document.getElementById('a-ghs').innerHTML=ghsHTML(e);
-  const ms=MOLS.filter(m=>m.counts[e.s]&&found.has(m.id));
+  const ms=MOLS.filter(m=>m.counts[e.s]);
   document.getElementById('a-molwrap').hidden=!ms.length;
   document.getElementById('a-mols').innerHTML=ms.map(m=>`<button data-id="${m.id}">${m.f} · ${m.name}</button>`).join('');
-  document.querySelectorAll('#a-mols button').forEach(b=>b.onclick=()=>{ closeAtom(); openMol(b.dataset.id); });
+  document.querySelectorAll('#a-mols button').forEach(b=>b.onclick=()=>{ closeAtom(); openGallery(b.dataset.id); });
   showFoto(e); showLex(e);
 }
 
@@ -2024,7 +2051,7 @@ function refreshLab(){
     return {idx,g,counts:c,free:fr,open,valid,known:mk.known,isomerOf:mk.isomerOf,key:wlKey(g.atoms,g.bonds),formula:mk.known?mk.known.f:formulaOf(c),allMetal:g.atoms.every(a=>METAL.has(a)),match:null}; });
   // Entdeckungen, Isomere, Abzeichen
   const news=[]; let ch=false;
-  compInfos.forEach(ci=>{ if(!ci.valid) return;
+  if(labMode!=='gal') compInfos.forEach(ci=>{ if(!ci.valid) return;
     if(ci.known&&!found.has(ci.known.id)){ found.add(ci.known.id); news.push(ci.known.name); }
     if(!ci.g.atoms.some(a=>METAL.has(a))&&recordIsomer(ci.counts,ci.key)) news.push('eine neue Anordnung von '+ci.formula);
     if(!stats.ring&&!ci.allMetal&&ringCount(ci.g)>0){ stats.ring=1; ch=true; }
@@ -2361,7 +2388,7 @@ function drawLewis(){
   g.atoms.forEach((el,i)=>{ const [px,py]=Q[i]; x.font=`700 ${fs}px Outfit, sans-serif`; x.fillStyle=lewisColor(el); x.fillText(el,px,py+1);
     const q=info[i].charge; if(q){ x.font=`700 ${Math.round(fs*.6)}px Outfit, sans-serif`; x.fillStyle=q>0?'#6fb6ff':'#ff7a7a'; x.fillText(chargeTxt(q),px+fs*.72+(el.length>1?fs*.25:0),py-fs*.55); } });
 }
-new ResizeObserver(()=>{ if(molOpen&&mView==='lewis'&&labMode==='build') drawLewis(); }).observe($('m-stage'));
+new ResizeObserver(()=>{ if(molOpen&&mView==='lewis'&&(labMode==='build'||labMode==='gal')) drawLewis(); }).observe($('m-stage'));
 
 /* Polarität: Teilladungen aus der Elektronegativität, Dipol aus der Form */
 function polarityInfo(g,P){
@@ -2423,6 +2450,41 @@ function afterBuild(){
 }
 function setMView(v){ mView=v; document.querySelectorAll('#m-views button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v)); afterBuild(); }
 document.querySelectorAll('#m-views button').forEach(b=>b.onclick=()=>setMView(b.dataset.v));
+
+/* =====================================================================
+   Galerie: alle Moleküle anschauen, ohne sie zu bauen (zählt nicht als «entdeckt»)
+   ===================================================================== */
+let galCur=null, galFilter='alle';
+const GAL_F={alle:['Alle',()=>true],org:['Mit Kohlenstoff',m=>m.counts.C&&m.id!=='co'&&m.id!=='co2'],saeure:['Säuren',m=>ACIDS.has(m.id)],
+  ion:['Salze',m=>isIonicMol(m)],luft:['In der Luft',m=>['n2','o2','co2','h2o','ar','o3','ch4'].includes(m.id)],selbst:['Selbst gebaut',m=>found.has(m.id)]};
+function renderGal(){
+  $('gal-f').innerHTML=Object.entries(GAL_F).map(([k,[n]])=>`<button class="chip" data-k="${k}" aria-pressed="${galFilter===k}">${n}</button>`).join('');
+  $('gal-f').querySelectorAll('button').forEach(b=>b.onclick=()=>{ galFilter=b.dataset.k; renderGal(); });
+  const q=norm($('gal-q').value.trim().replace(/₂/g,'2').replace(/₃/g,'3').replace(/₄/g,'4'));
+  const sub=s=>norm(String(s).replace(/[₀-₉]/g,c=>'0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(c)]));
+  const rank=m=>!q?0:(sub(m.f)===q||sub(m.name)===q)?0:(sub(m.f).includes(q)||sub(m.name).includes(q))?1:2;
+  const list=MOLS.filter(GAL_F[galFilter][1]).filter(m=>!q||[m.name,m.f,m.desc].some(x=>sub(x).includes(q))).sort((a,b)=>rank(a)-rank(b));
+  $('gal-label').textContent=`${GAL_F[galFilter][0]} · ${list.length} Moleküle`;
+  $('gal-list').innerHTML=list.length?list.map(m=>`<button data-id="${m.id}" aria-pressed="${galCur===m}"><b>${m.f}</b><span>${m.name}</span></button>`).join(''):'<div class="empty">Nichts gefunden.</div>';
+  $('gal-list').querySelectorAll('button').forEach(b=>b.onclick=()=>galShow(MOLS.find(x=>x.id===b.dataset.id)));
+}
+$('gal-q').addEventListener('input',renderGal);
+function galShow(m){
+  if(!m) return; galCur=m;
+  edReset(); edHist=[]; selAtom=null; focusAtom=null;
+  const g=graphOfKnown(m); setGraph(g.atoms,g.bonds); refreshLab();
+  const ci=compInfos.find(c=>c.known&&c.known.id===m.id)||compInfos[0];
+  if(ci){ open3D(ci.idx); if(mView!=='3d') setMView(mView); }
+  const P=knownPanel(m);
+  $('m-name').textContent=m.name; $('m-formula').textContent=m.f;
+  $('gal-desc').innerHTML=P.desc; $('gal-facts').innerHTML=P.facts.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  $('gal-list').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===m.id));
+  if(!location.hash.startsWith('#molekuel=')||location.hash!=='#molekuel='+m.id) history.replaceState(null,'','#molekuel='+m.id);
+}
+function openGallery(id){ openMol(); setLabMode('gal'); const m=MOLS.find(x=>x.id===id); if(m) galShow(m); }
+$('gal-build').onclick=()=>{ setLabMode('build'); if(galCur) say(`💡 Bau ${galCur.name} selbst: ${countList(galCur.counts)}`); };
+function openGalleryFromHash(){ const m=location.hash.match(/^#molekuel=([a-z0-9]+)$/); if(m&&MOLS.some(x=>x.id===m[1])){ if(atomOpen) closeAtom(); openGallery(m[1]); } }
+addEventListener('hashchange',openGalleryFromHash);
 
 /* =====================================================================
    Reaktionen
@@ -2523,12 +2585,13 @@ function setLabMode(m,silent){
   const prev=labMode; labMode=m; viewerOn=false;
   document.querySelectorAll('#m-modes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));
   const boardMode=m==='build'||m==='level';
-  $('sec-build').hidden=!boardMode; $('sec-react').hidden=m!=='react'; $('sec-hb').hidden=m!=='hb';
+  $('sec-build').hidden=!boardMode; $('sec-react').hidden=m!=='react'; $('sec-hb').hidden=m!=='hb'; $('sec-gal').hidden=m!=='gal'; $('m-back').hidden=m==='gal';
   $('lvl-panel').hidden=m!=='level'; $('build-extra').hidden=m!=='build'; $('kit-label').textContent=m==='level'?'Vorrat · ins Feld ziehen oder antippen':'Atome · ins Feld ziehen oder antippen';
   if(chal) chalStop(); lcv.hidden=true; $('m-info').hidden=true; clearMol();
   if(m!=='hb') stopHB();
   if(!boardMode){ bc.hidden=true; $('m-views').hidden=true; mc.hidden=false; }
-  if(m==='react'){ showReaction(rxCur||RXS[0]); renderRxB(); }
+  if(m==='gal'){ stopReaction(); stopHB(); edReset(); edHist=[]; selAtom=null; focusAtom=null; renderGal(); galShow(galCur||MOLS.find(x=>x.id==='h2o')); }
+  else if(m==='react'){ showReaction(rxCur||RXS[0]); renderRxB(); }
   else if(m==='hb'){ stopReaction(); buildHB(); $('m-name').textContent='Wasserstoffbrücken'; $('m-formula').textContent='12 × H₂O';
     $('m-cap').innerHTML='<span><b style="background:#ff4a3d"></b>Sauerstoff δ−</span><span><b style="background:#f4f6fa"></b>Wasserstoff δ+</span><span><b style="background:#ffd23f"></b>Wasserstoffbrücke</span><span>ziehen = drehen</span>'; }
   else { stopReaction(); showStage();
@@ -3668,7 +3731,7 @@ function frame(now){
   const d=fitDistance(); camera.position.copy(new THREE.Vector3(0.28,-0.38,1).normalize().multiplyScalar(d));
   controls.target.set(0,0,0); controls.update();
   requestAnimationFrame(frame);
-  openFromHash(); openClassFromHash(); openElFromHash();
+  openFromHash(); openClassFromHash(); openElFromHash(); openGalleryFromHash();
 })();
 
 /* =====================================================================

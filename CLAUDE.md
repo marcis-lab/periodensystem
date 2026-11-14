@@ -9,6 +9,7 @@
 
 - **Fotos der Elemente:** `bilder/el/<Symbol>.jpg`, Bildnachweis in `bilder/bilder.json`, geladen mit `python3 tools/bilder-laden.py` (Hauptbild des englischen Wikipedia-Artikels, langsam, eigener User-Agent; aus Cloud-Sitzungen oft 429, dann später oder lokal). Falsches Bild: Commons-Datei in `DATEI` im Skript eintragen und `python3 tools/bilder-laden.py <Symbol>`. Ab Fermium (100) sowie Astat und Francium gibt es keine Fotos.
 - **«Im Lexikon»** im Atom-Fenster: sucht den Elementnamen (plus Stichwörter in `LX_EXTRA`) in den `lexikon.json` der anderen Lexika, im Browser, ohne Build.
+- **Molekül-Galerie** (Molekül-Labor, Modus «Galerie», Direktlink `#molekuel=<id>`): alle Moleküle aus `MOLS` in 3D, Lewis, Polarität und Kalotte, ohne sie bauen zu müssen. Zählt nicht als «entdeckt» (`labMode==='gal'` überspringt die Entdeckungen in `refreshLab`). Das Atom-Fenster verlinkt unter «Kommt vor in» alle Moleküle mit dem Element in die Galerie.
 - **Lektionen** (`LESSONS` im Skript, Direktlink `#lektion=<id>`): vier Schritte mit Denkfrage und Werkzeug-Knopf, danach «Das Wichtigste». Neue Lektion = Eintrag in `LESSONS` und in `tools/lexikon.mjs`.
 
 ## Regeln für Claude (gelten in jeder Sitzung, auch in der Cloud und am Handy)

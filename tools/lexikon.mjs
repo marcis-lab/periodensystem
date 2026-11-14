@@ -8,6 +8,13 @@ const items = raw.trim().split('\n').map((l, i) => {
   const [s, name, , c, , , , , , yr, by, fact] = l.split('|');
   return { t: `${name} (${s})`, u: `/#el=${s}`, d: fact, k: `${s} ${name} Element Ordnungszahl ${i + 1} ${cat[c] || ''} ${by || ''} ${yr === 'A' ? 'Altertum' : yr || ''}`, p: cat[c] || 'Element' };
 });
+// Moleküle der Galerie (Direktlink #molekuel=<id>)
+const molSrc = html.slice(html.indexOf('const MOLS=['), html.indexOf('/* Farbe und Kugelgrösse') > 0 ? html.indexOf('/* Farbe und Kugelgrösse') : undefined);
+const mols = [...html.matchAll(/\{id:'([a-z0-9]+)',f:'([^']+)',name:'([^']+)'[^]*?desc:'([^']+)'/g), ...html.matchAll(/M2\('([a-z0-9]+)','([^']+)','([^']+)','[^']*','[^']*','([^']+)'\)/g)]
+  .map(m => ({ id: m[1], f: m[2], name: m[3], desc: m[4] }));
+const seen = new Set();
+for (const m of mols) { if (seen.has(m.id)) continue; seen.add(m.id);
+  items.push({ t: `${m.name} (${m.f})`, u: `/#molekuel=${m.id}`, d: m.desc, k: `${m.name} ${m.f} Molekül Formel 3D`, p: 'Molekül' }); }
 items.push(
   { t: 'Molekül-Labor', u: '/', d: 'Moleküle selbst bauen und in 3D drehen.', k: 'molekül baukasten bindung chemie', p: 'Werkzeug' },
   { t: 'Batterie-Labor', u: '/', d: 'Spannungsreihe der Metalle ausprobieren.', k: 'batterie spannung strom metalle', p: 'Werkzeug' },
