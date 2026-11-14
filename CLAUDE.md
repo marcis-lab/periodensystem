@@ -5,6 +5,7 @@
 - **Live:** https://periodensystem.thinklabs.workers.dev
 - **Produktions-Branch:** `main`
 - **Aufbau:** Die ganze Seite steckt in einer index.html. `worker.js` liefert sie als statische Datei aus und stellt die API für den Klassenmodus bereit (`/api/klasse`, ein Durable Object `Klasse` pro Klasse, Daten werden nach 2 Tagen gelöscht). Konfiguration: wrangler.jsonc; was nicht online geht: .assetsignore.
+- **Design:** gemeinsamer Lexikon-Look wie mindblow und Weltgeschichte (Wunsch der Besitzerin vom 14.11.2026): Schrift Outfit, Verlauf Pink → Blau (#FF3D85 → #5072FF), Glasflächen über weichen Farbwolken, hell als Standard und dunkel über `prefers-color-scheme`. Die 3D-Kacheln lesen ihre Grundfarben aus den `--tile-*`-Tokens (`readTheme()` im Skript) und zeichnen sich beim Wechsel des Modus neu; die Bühnen in den Fenstern (Atom, Moleküle, Batterie, Vergleich) bleiben absichtlich dunkel.
 
 ## Regeln für Claude (gelten in jeder Sitzung, auch in der Cloud und am Handy)
 
