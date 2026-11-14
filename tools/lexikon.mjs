@@ -11,6 +11,10 @@ const items = raw.trim().split('\n').map((l, i) => {
 items.push(
   { t: 'Molekül-Labor', u: '/', d: 'Moleküle selbst bauen und in 3D drehen.', k: 'molekül baukasten bindung chemie', p: 'Werkzeug' },
   { t: 'Batterie-Labor', u: '/', d: 'Spannungsreihe der Metalle ausprobieren.', k: 'batterie spannung strom metalle', p: 'Werkzeug' },
+  { t: 'Lektion: Warum rostet Eisen?', u: '/#lektion=rost', d: 'Oxidation, Wasser als Elektrolyt und wie man Eisen schützt.', k: 'rost rosten eisen oxidation verzinken edelstahl lektion', p: 'Lektion' },
+  { t: 'Lektion: Warum explodiert Natrium im Wasser?', u: '/#lektion=natrium', d: 'Alkalimetalle, Aussenelektronen und Wasserstoff.', k: 'natrium wasser explosion alkalimetall wasserstoff lektion', p: 'Lektion' },
+  { t: 'Lektion: Wie funktioniert ein Akku?', u: '/#lektion=akku', d: 'Spannungsreihe, Minus- und Pluspol, Lithium-Ionen-Akku.', k: 'akku batterie lithium strom spannung lektion', p: 'Lektion' },
+  { t: 'Lektion: Warum ist Gold so selten?', u: '/#lektion=gold', d: 'Erdkruste, Erdkern, Edelmetall und Neutronensterne.', k: 'gold selten edelmetall erdkern neutronenstern lektion', p: 'Lektion' },
   { t: 'Quiz und Klassenmodus', u: '/', d: 'Fragen zu den Elementen, auch für ganze Klassen.', k: 'quiz klasse schule test', p: 'Werkzeug' },
 );
 fs.writeFileSync(new URL('../lexikon.json', import.meta.url), JSON.stringify({ site: 'periodensystem', items }) + '\n');

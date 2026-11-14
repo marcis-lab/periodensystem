@@ -340,6 +340,43 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-size:13px;font-variant-numer
   dl.facts{grid-template-columns:auto 1fr;font-size:12.5px}
 }
 @media (prefers-reduced-motion:reduce){.wrap,.card,.shells span,body::before{animation:none}}
+/* Foto, Querverweise, Lektionen */
+.elfoto{flex:none;margin:0;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--sunk)}
+.elfoto img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--sunk)}
+.elfoto figcaption{padding:7px 12px 8px;font-size:11.5px;line-height:1.4;color:var(--muted)}
+.elfoto figcaption a{color:inherit}
+.elfoto.none{padding:12px 14px;font-size:13px;color:var(--muted);line-height:1.45}
+.lexlinks{display:grid;gap:6px}
+.lexlinks a{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;align-items:center;text-decoration:none;color:var(--fg);border:1px solid var(--line);background:var(--sunk);border-radius:14px;padding:9px 12px;transition:border-color .2s,transform .2s}
+.lexlinks a:hover{border-color:var(--blue);transform:translateY(-1px)}
+.lexlinks i{grid-row:1/3;width:10px;height:10px;border-radius:3px}
+.lexlinks small{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lexlinks b{font-weight:500;font-size:14px;line-height:1.3}
+.lexlinks .wait{font-size:12.5px;color:var(--muted)}
+.lesgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.lescard{all:unset;box-sizing:border-box;cursor:pointer;border:1px solid var(--line);background:var(--sunk);border-radius:18px;padding:14px 16px;display:grid;gap:4px;transition:border-color .2s,transform .2s}
+.lescard:hover,.lescard:focus-visible{border-color:var(--blue);transform:translateY(-2px)}
+.lescard small{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lescard b{font:600 17px/1.25 var(--f-display)}
+.lescard span{font-size:13px;color:var(--muted);line-height:1.4}
+.lescard.done small{color:var(--good)}
+.les-steps{display:flex;gap:6px;align-items:center}
+.les-steps button{width:34px;height:34px;border-radius:12px;border:1px solid var(--line-2);background:var(--glass-strong);color:var(--fg);font:600 13px var(--f-display);cursor:pointer}
+.les-steps button[aria-current="step"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.les-steps button.seen:not([aria-current="step"]){border-color:var(--blue)}
+.les-text p{margin:0 0 10px;font-size:15.5px;line-height:1.6;font-weight:300}
+.les-text b{font-weight:600}
+.les-text .eq{font-family:var(--f-mono);font-size:14px;background:var(--sunk);border-radius:10px;padding:8px 12px;display:inline-block;margin:2px 0 10px}
+.les-ask{border:1px dashed var(--blue);border-radius:16px;padding:12px 14px;display:grid;gap:8px}
+.les-ask .label{margin:0;color:var(--blue)}
+.les-ask p{margin:0;font-size:15px;font-weight:500}
+.les-ans{font-size:14.5px;font-weight:300;line-height:1.55;border-top:1px solid var(--line);padding-top:8px}
+.les-merke{border-radius:16px;padding:14px 16px;background:var(--sunk);border:1px solid var(--line)}
+.les-merke ul{margin:6px 0 0;padding-left:18px;font-size:15px;line-height:1.55}
+#les-back{position:fixed;z-index:30;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);display:flex;gap:12px;align-items:center;padding:8px 8px 8px 16px;border-radius:18px;font:500 14px var(--f-body);max-width:calc(100% - 32px)}
+#les-back .btn{flex:none}
+@media (max-width:600px){#les-back span{display:none}}
+
 /* Lexikon-Knopf in der oberen Leiste */
 .bar [data-lexikon]{display:contents}
 .bar .lx-btn{align-self:stretch}
@@ -378,6 +415,7 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-size:13px;font-variant-numer
   <div class="seg glass action">
     <button id="open-mol">Moleküle</button>
     <button id="open-bat">Batterie</button>
+    <button id="open-les">Lektionen</button>
     <button id="open-quiz" aria-pressed="false">Quiz</button>
     <button id="open-class">Klasse</button>
     <button id="open-prog" title="Lernfortschritt">⭐ <span id="prog-count">0</span></button>
@@ -467,6 +505,15 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-size:13px;font-variant-numer
   </div>
 </div>
 
+<!-- Lektionen -->
+<div class="wrap" id="les" hidden>
+  <div class="card solo wide" role="dialog" aria-modal="true" aria-labelledby="les-title">
+    <button class="close" id="les-close" aria-label="Schliessen">×</button>
+    <div class="side" id="les-body"></div>
+  </div>
+</div>
+<div class="glass" id="les-back" hidden><span id="les-back-txt"></span><button class="btn pri" id="les-back-btn">Zurück zur Lektion</button></div>
+
 <!-- Klassenmodus -->
 <div class="wrap" id="cls" hidden>
   <div class="card solo" role="dialog" aria-modal="true" aria-labelledby="cls-title">
@@ -514,8 +561,10 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-size:13px;font-variant-numer
         <div class="sym" id="a-sym"></div>
         <div><h2 id="a-name"></h2><div class="cat" id="a-cat"></div></div>
       </div>
+      <figure class="elfoto" id="a-foto" hidden></figure>
       <div id="a-radio"></div>
       <div class="fact" id="a-fact"></div>
+      <div id="a-lex" hidden><div class="label">Im Lexikon</div><div class="lexlinks" id="a-lexlinks"></div></div>
       <div id="a-ghs"></div>
       <div><div class="label">Elektronenkonfiguration</div><div class="conf" id="a-conf"></div></div>
       <div><div class="label">Elektronen pro Schale</div><div class="shells" id="a-shells"></div></div>
@@ -1252,6 +1301,7 @@ function fillSide(e){
   document.getElementById('a-molwrap').hidden=!ms.length;
   document.getElementById('a-mols').innerHTML=ms.map(m=>`<button data-id="${m.id}">${m.f} · ${m.name}</button>`).join('');
   document.querySelectorAll('#a-mols button').forEach(b=>b.onclick=()=>{ closeAtom(); openMol(b.dataset.id); });
+  showFoto(e); showLex(e);
 }
 
 function sizeGL(r,cam,cv){ const w=cv.clientWidth,h=cv.clientHeight; if(!w||!h) return; r.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }
@@ -3618,12 +3668,184 @@ function frame(now){
   const d=fitDistance(); camera.position.copy(new THREE.Vector3(0.28,-0.38,1).normalize().multiplyScalar(d));
   controls.target.set(0,0,0); controls.update();
   requestAnimationFrame(frame);
-  openFromHash(); openClassFromHash();
+  openFromHash(); openClassFromHash(); openElFromHash();
 })();
+
+/* =====================================================================
+   Echte Fotos der Elemente (bilder/el, Bildnachweis in bilder/bilder.json, geladen mit tools/bilder-laden.py)
+   ===================================================================== */
+let FOTOS=null;
+const fotosLaden=()=>FOTOS||(FOTOS=fetch('/bilder/bilder.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{}).catch(()=>({})));
+async function showFoto(e){
+  const f=$('a-foto');
+  if(e.z>=100||e.s==='At'||e.s==='Fr'){
+    f.className='elfoto none'; f.hidden=false;
+    f.textContent=e.z>=100?`Kein Foto: Von ${e.name} wurden bisher nur einzelne Atome hergestellt. Sie zerfallen, bevor man sie sehen könnte.`
+      :`Kein Foto: ${e.name} ist so radioaktiv und selten, dass noch nie genug davon zusammenkam, um es zu sehen.`;
+    return; }
+  const man=await fotosLaden(); if(current!==e) return;
+  const b=man[e.s]; if(!b){ f.hidden=true; f.innerHTML=''; return; }
+  f.className='elfoto'; f.hidden=false;
+  f.innerHTML=`<img src="${esc(b.src)}" alt="Foto: ${esc(e.name)}" decoding="async"><figcaption>Foto: ${esc(b.artist)} · ${esc(b.license)} · <a href="${esc(b.page)}" target="_blank" rel="noopener">Wikimedia Commons</a></figcaption>`;
+  f.querySelector('img').onerror=()=>{ f.hidden=true; };
+}
+
+/* =====================================================================
+   «Im Lexikon»: passende Einträge der anderen Lexika (über deren lexikon.json)
+   ===================================================================== */
+const LX_FALLBACK=[
+  {id:'mindblow',name:'mindblow',url:'https://mindblow.thinklabs.workers.dev',c:'#FF3D85'},
+  {id:'weltgeschichte',name:'timewarp',url:'https://weltgeschichte.thinklabs.workers.dev',c:'#F07A2A'},
+  {id:'bibel',name:'Bibel verstehen',url:'https://bibelerklaert.ch',c:'#A23FE6'},
+  {id:'musik-lexikon',name:'soundcheck',url:'https://musik-lexikon.thinklabs.workers.dev',c:'#14A874'},
+  {id:'sprachen-schriften',name:'wordtrip',url:'https://sprachen-schriften.thinklabs.workers.dev',c:'#5072FF'}];
+// Zusätzliche Stichwörter je Element: zählen nur, wenn sie im Titel eines Eintrags stehen
+const LX_EXTRA={Au:['Goldrausch','Geld','Münzen'],Ag:['Münzen','Silberling'],Cu:['Trompete','Bronze','Messing','Kupferzeit'],Zn:['Batterie','Messing'],Sn:['Bronze'],
+  Fe:['Stahl','Rost','Eisenzeit'],Si:['Computer','Chip','Glas'],C:['Diamant','Graphit','Kohle'],O:['Atmung','Luft'],He:['Sonne'],N:['Luft'],
+  Na:['Salz','Salzmarsch'],Cl:['Salz','Salzmarsch'],Ca:['Knochen','Kalk'],U:['Atomkern','Atombombe','Kernreaktor'],Pu:['Atombombe'],Li:['Akku'],
+  Ne:['Leuchtreklame'],P:['DNA'],K:['Banane'],Ra:['Radium'],Po:['Polonium'],Cs:['Atomuhr'],Sr:['Feuerwerk'],Ba:['Feuerwerk'],Mg:['Feuerwerk'],
+  Hg:['Thermometer'],I:['Schilddrüse'],F:['Zahnpasta'],Al:['Flugzeug'],W:['Glühbirne','Glühlampe'],Ni:['Münzen'],Co:['Akku'],S:['Vulkan']};
+const lxNorm=s=>' '+String(s||'').toLowerCase().replace(/ß/g,'ss').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim()+' ';
+const lxSites=()=>((window.Lexikon&&window.Lexikon.sites)||LX_FALLBACK).filter(s=>s.id!=='periodensystem');
+let lxData=null;
+function lxLoad(){
+  return lxData||(lxData=Promise.all(lxSites().map(async s=>{
+    const key='ps-lexikon:'+s.id;
+    try{ const c=JSON.parse(sessionStorage.getItem(key)||'null'); if(c&&Date.now()-c.at<36e5) return {s,items:c.items}; }catch(_){}
+    try{ const r=await fetch(s.url+'/lexikon.json',{mode:'cors'}); if(!r.ok) throw 0; const j=await r.json();
+      const items=(j.items||[]).map(i=>({t:i.t,u:i.u,p:i.p,nt:lxNorm(i.t),nk:lxNorm([i.k,i.d,i.p].join(' '))}));
+      try{ sessionStorage.setItem(key,JSON.stringify({at:Date.now(),items})); }catch(_){}
+      return {s,items}; }catch(_){ return {s,items:[]}; }
+  })));
+}
+async function showLex(e){
+  const box=$('a-lex'), list=$('a-lexlinks');
+  box.hidden=false; list.innerHTML='<span class="wait">Suche in den anderen Lexika …</span>';
+  const all=await lxLoad(); if(current!==e) return;
+  const name=lxNorm(e.name).trim(), extra=(LX_EXTRA[e.s]||[]).map(w=>lxNorm(w).trim());
+  const hits=[];
+  for(const {s,items} of all){
+    const found=items.map(i=>{ let sc=0;
+      if(i.nt.includes(' '+name+' ')) sc+=12; else if(i.nk.includes(' '+name+' ')) sc+=4;
+      for(const w of extra) if(i.nt.includes(' '+w+' ')) sc+=4;
+      return sc?{i,sc}:null; }).filter(Boolean).sort((a,b)=>b.sc-a.sc).slice(0,2);
+    found.forEach(f=>hits.push({s,...f}));
+  }
+  hits.sort((a,b)=>b.sc-a.sc);
+  if(!hits.length){ box.hidden=true; return; }
+  list.innerHTML=hits.slice(0,6).map(({s,i})=>{ const href=/^https?:/.test(i.u)?i.u:s.url+i.u;
+    return `<a href="${esc(href)}" target="_blank" rel="noopener"><i style="background:${s.c}"></i><small>${esc(s.name)}${i.p?' · '+esc(i.p):''}</small><b>${esc(i.t)}</b></a>`; }).join('');
+}
+
+/* =====================================================================
+   Lektionen: geführte Lernpfade mit vier Schritten, Denkfragen und Werkzeugen
+   ===================================================================== */
+const T={
+  atom:(s,v)=>()=>{ openAtom(ELS[s]); if(v) showView(v); },
+  cmp:(a,b)=>()=>openCompare(ELS[a],ELS[b]),
+  bat:(a,b,cont,n)=>()=>{ Object.assign(batS,{a,b,cont:cont||'cup',n:n||1,t:0,parts:[]}); openBattery(); },
+  mode:(m,k)=>()=>{ if(m==='abund') abKey=k||'crust'; if(m==='trend') trendKey=k||'rad'; setMode(m); },
+  rx:id=>()=>{ openMol(); setLabMode('react'); const r=RXS.find(x=>x.id===id); if(r) showReaction(r); }
+};
+const LESSONS=[
+  {id:'rost',q:'Warum rostet Eisen?',intro:'Ein Velo, das den ganzen Winter draussen steht, wird rotbraun und bröselig. Was passiert da mit dem Eisen?',steps:[
+    {h:'Eisen gibt Elektronen ab',t:['Eisen ist ein Metall: Seine Atome geben ihre äusseren Elektronen recht leicht ab. Sauerstoff dagegen zieht Elektronen stark an. Seine Elektronegativität ist 3,44, die von Eisen nur 1,83.','Treffen die beiden aufeinander, wandern Elektronen vom Eisen zum Sauerstoff. Diesen Vorgang nennt man <b>Oxidation</b>, nach dem Sauerstoff (lateinisch oxygenium).'],
+      ask:'Welches der beiden Elemente zieht die Elektronen stärker an?',ans:'Der Sauerstoff. Er ist nach Fluor das Element mit der zweithöchsten Elektronegativität.',tool:['Eisen und Sauerstoff vergleichen',T.cmp('Fe','O')]},
+    {h:'Ohne Wasser kein Rost',t:['In ganz trockener Luft rostet Eisen kaum. Erst Wasser macht es möglich: Es lässt geladene Teilchen (Ionen) wandern, genau wie der Elektrolyt in einer Batterie.','An einer Stelle gibt das Eisen Elektronen ab: <span class="eq">Fe → Fe²⁺ + 2 e⁻</span> An einer anderen Stelle nehmen Sauerstoff und Wasser sie auf. Das Eisenstück ist also eine winzige Batterie, die sich selbst auflöst.','Salz im Wasser leitet die Ionen noch besser. Darum rosten Autos im Winter wegen des Streusalzes schneller.'],
+      ask:'Warum rostet ein Nagel in der Wüste kaum, am Meer aber sehr schnell?',ans:'In der Wüste fehlt das Wasser. Am Meer ist die Luft feucht und enthält Salz, das die Ionen besonders gut leitet.',tool:['Eisen im Batterie-Labor',T.bat('Fe','Cu')]},
+    {h:'Rost ist bröselig, Aluminiumoxid nicht',t:['Rost ist vor allem wasserhaltiges Eisenoxid (ungefähr Fe₂O₃ · n H₂O). Er braucht mehr Platz als das Eisen, ist porös und blättert ab. So kommt immer wieder frisches Eisen an die Luft, und der Rost frisst sich tiefer.','Bei Aluminium ist es anders: Es bildet sofort eine hauchdünne, dichte Schicht aus Aluminiumoxid, die fest haftet und das Metall darunter schützt.'],
+      ask:'Aluminium steht in der Spannungsreihe weiter links als Eisen, ist also unedler. Warum rostet es trotzdem nicht durch?',ans:'Seine Oxidschicht ist dicht und haftet fest. Sie schliesst das Metall darunter von Luft und Wasser ab. Rost dagegen ist porös und blättert ab.',tool:['Spannungsreihe: Aluminium und Eisen',T.bat('Al','Fe')]},
+    {h:'So schützt man Eisen',t:['<b>Farbe, Lack oder Öl</b> halten Wasser und Sauerstoff fern.','<b>Verzinken:</b> Das Eisen bekommt einen Überzug aus Zink. Zink ist unedler als Eisen und gibt seine Elektronen zuerst ab. Es «opfert» sich für das Eisen, darum spricht man von einer Opferanode.','<b>Edelstahl</b> enthält Chrom. Chrom bildet wie Aluminium eine dichte Schutzschicht.'],
+      ask:'Warum schützt ein Zinküberzug das Eisen sogar dann noch, wenn er einen Kratzer hat?',ans:'Weil Zink unedler ist als Eisen: Am Kratzer gibt das Zink zuerst seine Elektronen ab und schützt so das freiliegende Eisen daneben.',tool:['Zink gegen Eisen im Batterie-Labor',T.bat('Zn','Fe')]}],
+    merke:['Rosten ist eine Oxidation: Eisen gibt Elektronen an Sauerstoff ab.','Wasser (und Salz) beschleunigen das Rosten, weil sie Ionen leiten.','Rost ist porös, Aluminium- und Chromoxid sind dicht und schützen.','Schutz: Farbe, Verzinken (Zink opfert sich) oder Edelstahl.']},
+  {id:'natrium',q:'Warum explodiert Natrium im Wasser?',intro:'Ein Stückchen Natrium im Wasser zischt, flitzt herum und kann sogar knallen. Dabei ist Natrium die Hälfte unseres Kochsalzes.',steps:[
+    {h:'Ein einsames Aussenelektron',t:['Natrium hat 11 Elektronen, verteilt auf drei Schalen: 2, 8 und 1. Das einzelne Elektron ganz aussen ist weit vom Kern entfernt und nur schwach gebunden.','Gibt Natrium dieses Elektron ab, wird es zum Natrium-Ion Na⁺ und hat eine volle Aussenschale wie das Edelgas Neon. Das ist sehr stabil, darum «will» Natrium sein Elektron loswerden.'],
+      ask:'Wie viele Elektronen hat ein Natrium-Ion Na⁺?',ans:'10, genau so viele wie ein Neon-Atom. Die Zahl der Protonen bleibt aber 11, darum ist das Ion positiv geladen.',tool:['Natrium-Atom öffnen und «Ion bilden» antippen',T.atom('Na','bohr')]},
+    {h:'Die Reaktion mit Wasser',t:['Natrium gibt sein Elektron an das Wasser ab. Dabei entstehen Natronlauge und Wasserstoffgas: <span class="eq">2 Na + 2 H₂O → 2 NaOH + H₂</span>','Es wird so viel Wärme frei, dass das Natrium schmilzt. Sein Schmelzpunkt liegt bei nur 97,8 °C. Als glänzende Kugel flitzt es auf dem entstehenden Gas über das Wasser.'],
+      ask:'Welches Gas entsteht bei der Reaktion?',ans:'Wasserstoff (H₂). Das Natrium bleibt als Natronlauge im Wasser gelöst.',tool:['Natrium ansehen',T.atom('Na')]},
+    {h:'Warum es knallt',t:['Wasserstoff ist brennbar. Wird es heiss genug, entzündet er sich mit dem Sauerstoff der Luft: Es knallt (Knallgas).','Bei grösseren Stücken passiert aber noch mehr. Forschende haben 2015 mit Hochgeschwindigkeitskameras gezeigt: Im allerersten Moment gibt das Metall so schnell Elektronen ab, dass die zurückbleibenden positiv geladenen Atome sich gegenseitig abstossen. Das Stück wird regelrecht auseinandergerissen, eine sogenannte Coulomb-Explosion.'],
+      ask:'Warum wird Natrium im Labor unter Öl aufbewahrt?',ans:'Damit es weder mit der Feuchtigkeit noch mit dem Sauerstoff der Luft reagieren kann.',tool:['Knallgas im Molekül-Labor',T.rx('knallgas')]},
+    {h:'Je weiter unten, desto heftiger',t:['Alle Alkalimetalle (Gruppe 1) haben genau ein Aussenelektron. Lithium sprudelt im Wasser, Natrium flitzt, Kalium entzündet sich mit violetter Flamme, Rubidium und Caesium reagieren explosionsartig.','Der Grund: Nach unten werden die Atome grösser. Das Aussenelektron ist weiter vom Kern entfernt und noch leichter abzugeben.'],
+      ask:'Was würde Francium im Wasser tun?',ans:'Vermutlich noch heftiger reagieren. Beobachten konnte man das aber nie: Francium ist so radioaktiv und selten, dass es nie in sichtbarer Menge existierte.',tool:['Trend «Atomradius» zeigen',T.mode('trend','rad')]}],
+    merke:['Alkalimetalle haben ein einziges, schwach gebundenes Aussenelektron.','Mit Wasser entstehen Lauge und Wasserstoff, dabei wird viel Wärme frei.','Der Wasserstoff kann sich entzünden; grössere Stücke reissen auseinander.','Nach unten in der Gruppe werden die Reaktionen immer heftiger.']},
+  {id:'akku',q:'Wie funktioniert ein Akku?',intro:'Im Handy, im Laptop und im E-Auto stecken Akkus. Woher kommt ihr Strom, und warum steckt fast überall Lithium drin?',steps:[
+    {h:'Zwei Metalle, ein Elektrolyt',t:['Jede Batterie besteht aus zwei verschiedenen Stoffen (Elektroden) und einem Elektrolyten dazwischen, der Ionen leitet.','Das unedlere Metall gibt Elektronen ab und wird zum <b>Minuspol</b>. Die Elektronen fliessen durch den Draht zum edleren Metall, dem <b>Pluspol</b>. Dieser Elektronenfluss ist der elektrische Strom.'],
+      ask:'Bei Zink und Kupfer: Welches Metall ist der Minuspol?',ans:'Zink. Es ist unedler (−0,76 V) als Kupfer (+0,34 V) und gibt seine Elektronen ab.',tool:['Daniell-Element im Batterie-Labor',T.bat('Zn','Cu')]},
+    {h:'Woher die Spannung kommt',t:['Wie viel Spannung eine Zelle liefert, hängt davon ab, wie weit die beiden Stoffe in der Spannungsreihe auseinanderliegen. Zink und Kupfer ergeben 1,10 Volt.','Lithium hat von allen Metallen das tiefste Standardpotenzial (−3,04 V) und ist zugleich das leichteste Metall. Viel Spannung bei wenig Gewicht: Darum ist es ideal für Akkus.'],
+      ask:'Welche Kombination im Batterie-Labor ergibt die höchste Spannung?',ans:'Lithium und Gold: 1,50 V − (−3,04 V) = 4,54 V. In echten Akkus nimmt man natürlich kein Gold, sondern Metalloxide.',tool:['Lithium und Gold ausprobieren',T.bat('Li','Au')]},
+    {h:'Batterie oder Akku?',t:['Eine Batterie ist leer, wenn das unedle Metall aufgebraucht ist. Bei einem <b>Akku</b> lässt sich die Reaktion umkehren: Beim Laden drückt das Ladegerät die Elektronen zurück.','Im Lithium-Ionen-Akku wandern beim Entladen Lithium-Ionen von der Graphit-Seite zur Metalloxid-Seite (zum Beispiel mit Cobalt oder Eisenphosphat), beim Laden wieder zurück.'],
+      ask:'Warum darf in einem Lithium-Akku kein Wasser sein?',ans:'Lithium reagiert mit Wasser (es entsteht Wasserstoff). Darum haben Lithium-Akkus einen wasserfreien Elektrolyten.',tool:['Lithium-Atom ansehen',T.atom('Li')]},
+    {h:'Mehr Spannung: Zellen in Reihe',t:['Eine einzelne Zelle liefert nur wenige Volt. Schaltet man mehrere hintereinander (in Reihe), addieren sich die Spannungen.','Ein Handy-Akku hat meist eine Zelle mit rund 3,7 Volt, ein E-Auto Hunderte bis Tausende Zellen.'],
+      ask:'Wie viele Zink-Kupfer-Zellen braucht es mindestens, damit eine rote LED (ab 1,8 V) leuchtet?',ans:'Zwei: 2 × 1,10 V = 2,20 V. Eine allein reicht mit 1,10 V nicht.',tool:['LED-Versuch mit Zitronen',T.bat('Zn','Cu','lemon',3)]}],
+    merke:['Eine Batterie braucht zwei Elektroden und einen Elektrolyten.','Das unedlere Metall ist der Minuspol; je grösser der Abstand in der Spannungsreihe, desto höher die Spannung.','Ein Akku lässt sich wieder aufladen, weil die Reaktion umkehrbar ist.','Zellen in Reihe addieren ihre Spannungen.']},
+  {id:'gold',q:'Warum ist Gold so selten?',intro:'Gold ist seit Jahrtausenden kostbar. Aber warum gibt es davon so wenig, wo doch Eisen und Silicium überall sind?',steps:[
+    {h:'Wie selten ist Gold?',t:['In der Erdkruste kommen auf eine Tonne Gestein im Durchschnitt nur etwa 4 Milligramm Gold. Silicium dagegen macht rund 28 Prozent der Erdkruste aus.','Alles Gold, das Menschen je gefördert haben, rund 200 000 Tonnen, würde in einen Würfel mit etwa 22 Metern Kantenlänge passen.'],
+      ask:'Wie viel durchschnittliches Gestein bräuchte man für 1 Gramm Gold?',ans:'Rund 250 Tonnen. Goldminen suchen darum Stellen, an denen Gold viel stärker angereichert ist, oft einige Gramm pro Tonne.',tool:['Häufigkeit in der Erdkruste zeigen',T.mode('abund','crust')]},
+    {h:'Das meiste Gold liegt im Erdkern',t:['Als die junge Erde noch glutflüssig war, sank das schwere Eisen in die Mitte und bildete den Erdkern. Gold löst sich gern in Eisen und wurde mit hinabgezogen.','Darum steckt der allergrösste Teil des Goldes der Erde im Kern, unerreichbar tief. Forschende vermuten, dass ein Teil des Goldes in der Kruste erst später mit Meteoriten auf die Erde kam.'],
+      ask:'Warum kann man das Gold im Erdkern nicht abbauen?',ans:'Der Erdkern beginnt fast 2900 Kilometer unter unseren Füssen. Die tiefsten Bohrungen kamen nur gut 12 Kilometer weit.',tool:['Gold und Eisen vergleichen',T.cmp('Au','Fe')]},
+    {h:'Gold rostet nicht',t:['Gold ist ein Edelmetall: Es gibt seine Elektronen kaum ab und steht in der Spannungsreihe ganz rechts (+1,50 V). Darum reagiert es fast mit nichts.','Deshalb findet man Gold oft rein in der Natur, als Nugget oder Goldstaub im Fluss. Goldschmuck aus dem alten Ägypten glänzt noch heute.'],
+      ask:'Warum kannten die Menschen Gold schon im Altertum, Aluminium aber erst seit 1825?',ans:'Gold liegt rein in der Natur. Aluminium ist unedel und steckt immer fest gebunden im Gestein. Um es zu gewinnen, brauchte man moderne Chemie und später elektrischen Strom.',tool:['Gold in der Spannungsreihe',T.bat('Zn','Au')]},
+    {h:'Woher kommt Gold überhaupt?',t:['In gewöhnlichen Sternen entstehen Elemente nur bis etwa Eisen. Schwere Elemente wie Gold brauchen extreme Bedingungen mit sehr vielen freien Neutronen.','Forschende gehen heute davon aus, dass Gold vor allem entsteht, wenn zwei Neutronensterne verschmelzen. 2017 wurde ein solches Ereignis beobachtet (GW170817), dabei sah man Spuren schwerer Elemente. Gold ist also wirklich Sternenstaub, und zwar ein seltener.'],
+      ask:'Gold hat nur ein einziges stabiles Isotop. Welches?',ans:'Gold-197, mit 79 Protonen und 118 Neutronen.',tool:['Gold-Isotope ansehen',T.atom('Au','iso')]}],
+    merke:['Gold ist in der Erdkruste extrem selten (etwa 4 g in 1000 Tonnen Gestein).','Das meiste Gold sank mit dem Eisen in den Erdkern.','Als Edelmetall rostet Gold nicht und kommt rein in der Natur vor.','Gold entsteht vor allem bei der Verschmelzung von Neutronensternen.']}
+];
+const lesWrap=$('les'); let lesCur=null, lesStep=0, lesSeen=new Set();
+function openLes(id,step){
+  if(quiz) endQuiz(); $('les-back').hidden=true; lesWrap.hidden=false;
+  const L=LESSONS.find(x=>x.id===id); lesCur=L||null; lesStep=step||0;
+  if(!L) renderLesList(); else renderLes();
+  $('les-close').focus({preventScroll:true});
+}
+function closeLes(keepBack){ lesWrap.hidden=true; if(!keepBack) $('les-back').hidden=true; if(location.hash.startsWith('#lektion')) history.replaceState(null,'',location.pathname+location.search); canvas.focus({preventScroll:true}); }
+function renderLesList(){
+  const done=prog.les||[];
+  $('les-body').innerHTML=`<div class="top"><div><h2 id="les-title">Lektionen</h2><div class="cat">Vier Schritte mit Denkfragen, dazu die passenden Werkzeuge zum Ausprobieren</div></div></div>
+    <div class="lesgrid">${LESSONS.map((L,n)=>`<button class="lescard${done.includes(L.id)?' done':''}" data-id="${L.id}"><small>Lektion ${n+1}${done.includes(L.id)?' · erledigt ✓':''}</small><b>${esc(L.q)}</b><span>${esc(L.intro)}</span></button>`).join('')}</div>`;
+  $('les-body').querySelectorAll('.lescard').forEach(b=>b.onclick=()=>{ lesCur=LESSONS.find(x=>x.id===b.dataset.id); lesStep=0; lesSeen=new Set(); renderLes(); });
+}
+function renderLes(){
+  const L=lesCur, n=LESSONS.indexOf(L), last=lesStep>=L.steps.length;
+  history.replaceState(null,'','#lektion='+L.id);
+  lesSeen.add(lesStep);
+  const nav=`<div class="les-steps" role="group" aria-label="Schritte">${L.steps.map((_,k)=>`<button data-k="${k}" ${k===lesStep?'aria-current="step"':''} class="${lesSeen.has(k)?'seen':''}" aria-label="Schritt ${k+1}">${k+1}</button>`).join('')}<button data-k="${L.steps.length}" ${last?'aria-current="step"':''} aria-label="Das Wichtigste">✓</button></div>`;
+  let body;
+  if(!last){ const S=L.steps[lesStep];
+    body=`<div class="label">Schritt ${lesStep+1} von ${L.steps.length}</div><h3 style="margin:0;font:600 22px/1.2 var(--f-display);letter-spacing:-.015em">${S.h}</h3>
+      <div class="les-text">${S.t.map(p=>`<p>${p}</p>`).join('')}</div>
+      <div class="les-ask"><div class="label">Denkfrage</div><p>${S.ask}</p><div class="les-ans" id="les-ans" hidden>${S.ans}</div>
+        <div class="mini"><button id="les-show">Antwort zeigen</button>${S.tool?`<button id="les-tool">▶ ${esc(S.tool[0])}</button>`:''}</div></div>`;
+  } else {
+    body=`<div class="label">Das Wichtigste</div><div class="les-merke"><b>${esc(L.q)}</b><ul>${L.merke.map(m=>`<li>${m}</li>`).join('')}</ul></div>`;
+    if(!(prog.les||[]).includes(L.id)){ prog.les=[...(prog.les||[]),L.id]; saveProg(); checkEBadges(); }
+  }
+  $('les-body').innerHTML=`<div class="top"><div><div class="cat">Lektion ${n+1} von ${LESSONS.length}</div><h2 id="les-title">${esc(L.q)}</h2></div></div>
+    ${lesStep===0?`<p class="fact" style="margin:0">${esc(L.intro)}</p>`:''}${nav}${body}
+    <div class="nav"><button id="les-prev">${lesStep===0?'← Alle Lektionen':'← Zurück'}</button><button class="btn pri" id="les-next">${last?(n<LESSONS.length-1?'Nächste Lektion →':'Fertig ✓'):lesStep===L.steps.length-1?'Das Wichtigste →':'Weiter →'}</button></div>`;
+  $('les-body').querySelectorAll('.les-steps button').forEach(b=>b.onclick=()=>{ lesStep=+b.dataset.k; renderLes(); });
+  $('les-prev').onclick=()=>{ if(lesStep===0){ lesCur=null; history.replaceState(null,'','#lektion'); renderLesList(); } else { lesStep--; renderLes(); } };
+  $('les-next').onclick=()=>{ if(!last){ lesStep++; renderLes(); } else if(n<LESSONS.length-1){ lesCur=LESSONS[n+1]; lesStep=0; lesSeen=new Set(); renderLes(); } else closeLes(); };
+  if($('les-show')) $('les-show').onclick=()=>{ $('les-ans').hidden=false; $('les-show').hidden=true; };
+  if($('les-tool')) $('les-tool').onclick=()=>{ const S=L.steps[lesStep]; closeLes(true); S.tool[1]();
+    $('les-back-txt').textContent=`Lektion: ${L.q}`; $('les-back').hidden=false; };
+  $('les-body').scrollTop=0; lesWrap.querySelector('.card').scrollTop=0;
+}
+$('open-les').onclick=()=>openLes();
+$('les-close').onclick=()=>closeLes();
+lesWrap.addEventListener('pointerdown',ev=>{ if(ev.target===lesWrap) closeLes(); });
+$('les-back-btn').onclick=()=>{ $('les-back').hidden=true;
+  if(atomOpen) closeAtom(); if(!batWrap.hidden) closeBattery(); if(!cmpWrap.hidden) closeCompare(); if(molOpen) closeMol();
+  if(colorMode!=='cat') setMode('cat');
+  if(lesCur) openLes(lesCur.id,lesStep); else openLes(); };
+addEventListener('keydown',ev=>{ if(ev.key==='Escape'&&!lesWrap.hidden) closeLes(); });
+function openLesFromHash(){ const m=location.hash.match(/^#lektion(?:=([a-z]+))?$/); if(m) openLes(m[1]); }
+addEventListener('hashchange',openLesFromHash);
+EBADGES.push({id:'les1',e:'📘',n:'Erste Lektion',d:'Eine Lektion bis zum Ende gemacht',p:()=>[(prog.les||[]).length,1]},
+  {id:'lesall',e:'🎓',n:'Alle Lektionen',d:`Alle ${LESSONS.length} Lektionen geschafft`,p:()=>[(prog.les||[]).length,LESSONS.length]});
+openLesFromHash();
 
 /* Direktlink auf ein Element (vom Lexikon): #el=Fe */
 function openElFromHash(){ const m=location.hash.match(/^#el=([A-Z][a-z]?)$/); if(m && ELS[m[1]]) openAtom(ELS[m[1]]); }
-addEventListener('hashchange',openElFromHash); openElFromHash();
+addEventListener('hashchange',openElFromHash);   // erster Aufruf in start(), wenn die Kacheln stehen
 </script>
 <script src="https://mindblow.thinklabs.workers.dev/lexikon/lexikon.js" data-site="periodensystem" defer></script>
 </body>

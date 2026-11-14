@@ -7,6 +7,10 @@
 - **Aufbau:** Die ganze Seite steckt in einer index.html. `worker.js` liefert sie als statische Datei aus und stellt die API für den Klassenmodus bereit (`/api/klasse`, ein Durable Object `Klasse` pro Klasse, Daten werden nach 2 Tagen gelöscht). Konfiguration: wrangler.jsonc; was nicht online geht: .assetsignore.
 - **Design:** gemeinsamer Lexikon-Look wie mindblow und Weltgeschichte (Wunsch der Besitzerin vom 14.11.2026): Schrift Outfit, Verlauf Pink → Blau (#FF3D85 → #5072FF), Glasflächen über weichen Farbwolken, hell als Standard und dunkel über `prefers-color-scheme`. Die 3D-Kacheln lesen ihre Grundfarben aus den `--tile-*`-Tokens (`readTheme()` im Skript) und zeichnen sich beim Wechsel des Modus neu; die Bühnen in den Fenstern (Atom, Moleküle, Batterie, Vergleich) bleiben absichtlich dunkel.
 
+- **Fotos der Elemente:** `bilder/el/<Symbol>.jpg`, Bildnachweis in `bilder/bilder.json`, geladen mit `python3 tools/bilder-laden.py` (Hauptbild des englischen Wikipedia-Artikels, langsam, eigener User-Agent; aus Cloud-Sitzungen oft 429, dann später oder lokal). Falsches Bild: Commons-Datei in `DATEI` im Skript eintragen und `python3 tools/bilder-laden.py <Symbol>`. Ab Fermium (100) sowie Astat und Francium gibt es keine Fotos.
+- **«Im Lexikon»** im Atom-Fenster: sucht den Elementnamen (plus Stichwörter in `LX_EXTRA`) in den `lexikon.json` der anderen Lexika, im Browser, ohne Build.
+- **Lektionen** (`LESSONS` im Skript, Direktlink `#lektion=<id>`): vier Schritte mit Denkfrage und Werkzeug-Knopf, danach «Das Wichtigste». Neue Lektion = Eintrag in `LESSONS` und in `tools/lexikon.mjs`.
+
 ## Regeln für Claude (gelten in jeder Sitzung, auch in der Cloud und am Handy)
 
 Die vollständigen Regeln und die Liste aller Projekte stehen im Repo **`marcis-lab/claude-wissen`** (Datei `CLAUDE.md`).
