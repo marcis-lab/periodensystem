@@ -1,4 +1,13 @@
 # Lokale Claude-Einstellungen (Vorschau-Server) nicht veröffentlichen
 .claude/
+# Wrangler-Cache (Cloudflare)
+.wrangler/
 .DS_Store
 Thumbs.db
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
