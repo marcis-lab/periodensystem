@@ -114,7 +114,13 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
 .molchips button:hover{border-color:var(--muted)}
 .molchips button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 .kit{display:flex;flex-wrap:wrap;gap:6px}
-.kit button{position:relative;width:46px;height:46px;border-radius:50%;border:0;font:700 15px var(--f-display);cursor:pointer;color:#0a0d13}
+.kit button{position:relative;width:42px;height:42px;border-radius:50%;border:0;font:700 14px var(--f-display);cursor:pointer;color:#0a0d13;transition:transform .12s}
+.kit button:active{transform:scale(.9)}
+.kit button:disabled{opacity:.35;cursor:not-allowed}
+.mini button:disabled{opacity:.4;cursor:not-allowed}
+.msg.warn{color:#ffcf8a}
+.msg.new{color:var(--good);font-weight:600}
+.empty{font-size:12.5px;color:var(--muted);line-height:1.5}
 .kit button span{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--fg);color:#0a0d13;font:600 11px/18px var(--f-mono);padding:0 4px}
 .tray{font:500 14px var(--f-mono);min-height:20px}
 .msg{font-size:13px;line-height:1.45;color:var(--muted)}
@@ -263,16 +269,16 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
     </div>
     <div class="side">
       <div class="top"><div><h2 id="m-name"></h2><div class="cat" id="m-formula"></div></div></div>
-      <div class="fact" id="m-desc"></div>
-      <dl class="facts" id="m-facts"></dl>
       <div>
         <div class="label">Baukasten · Atome antippen</div>
         <div class="kit" id="kit"></div>
       </div>
       <div class="tray" id="tray"></div>
       <div class="msg" id="kit-msg" aria-live="polite"></div>
-      <div class="mini"><button id="kit-clear">Baukasten leeren</button></div>
-      <div><div class="label">Fertige Moleküle</div><div class="molchips" id="mol-list"></div></div>
+      <div class="mini"><button id="kit-undo">↶ Zurück</button><button id="kit-clear">Leeren</button><button id="kit-tip">💡 Tipp</button></div>
+      <div class="fact" id="m-desc"></div>
+      <dl class="facts" id="m-facts"></dl>
+      <div><div class="label" id="found-label">Entdeckt</div><div class="molchips" id="mol-list"></div></div>
     </div>
   </div>
 </div>
@@ -873,7 +879,7 @@ function fillSide(e){
     ['Siedepunkt',e.bp!=null&&!(e.z===6||e.z===33)?fmtC(e.bp):'–'],['Dichte',e.rho!=null?fmtRho(e.rho):'–'],['Atomradius',e.rad!=null?e.rad+' pm':'–'],['Bei 20 °C',st],
     ['Entdeckt',fmtYear(e.year)],['Von',e.by],['Herkunft',synth?'künstlich':'natürlich']];
   document.getElementById('a-facts').innerHTML=rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
-  const ms=MOLS.filter(m=>m.counts[e.s]);
+  const ms=MOLS.filter(m=>m.counts[e.s]&&found.has(m.id));
   document.getElementById('a-molwrap').hidden=!ms.length;
   document.getElementById('a-mols').innerHTML=ms.map(m=>`<button data-id="${m.id}">${m.f} · ${m.name}</button>`).join('');
   document.querySelectorAll('#a-mols button').forEach(b=>b.onclick=()=>{ closeAtom(); openMol(b.dataset.id); });
@@ -898,7 +904,9 @@ document.getElementById('a-prev').onclick=()=>stepAtom(-1);
 document.getElementById('a-next').onclick=()=>stepAtom(1);
 
 /* ---------- Moleküle ---------- */
-const CPK={H:['#f4f6fa',.32],C:['#5b616e',.5],N:['#4a6cff',.48],O:['#ff4a3d',.46],S:['#ffd23f',.6],Cl:['#3fe06a',.62],Na:['#b07cff',.55]};
+/* Farbe und Kugelgrösse (CPK-Farben) */
+const CPK={H:['#f4f6fa',.32],C:['#5b616e',.5],N:['#4a6cff',.48],O:['#ff4a3d',.46],S:['#ffd23f',.6],P:['#ff9a2e',.6],F:['#9be870',.42],Cl:['#3fe06a',.62],Br:['#b5532f',.68],I:['#9a4dd6',.75],
+  B:['#ffb5a6',.5],Si:['#e0c49c',.65],Li:['#c88cff',.55],Na:['#b07cff',.6],K:['#8f52e0',.7],Mg:['#6fe07a',.6],Ca:['#a8d8a0',.68],Al:['#c8b6b6',.62]};
 const D2R=Math.PI/180;
 function bentPair(d,ang){ const a=ang/2*D2R; return [[d*Math.sin(a),-d*Math.cos(a),0],[-d*Math.sin(a),-d*Math.cos(a),0]]; }
 const MOLS=[
@@ -938,6 +946,60 @@ const MOLS=[
     build:()=>{ const a=[],b=[],s=2.82,idx={}; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(let k=-1;k<=1;k++){ idx[[i,j,k]]=a.length; a.push([(i+j+k)%2===0?'Na':'Cl',i*s,j*s,k*s,true]); }
       for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(let k=-1;k<=1;k++){ if(i<1) b.push([idx[[i,j,k]],idx[[i+1,j,k]],0]); if(j<1) b.push([idx[[i,j,k]],idx[[i,j+1,k]],0]); if(k<1) b.push([idx[[i,j,k]],idx[[i,j,k+1]],0]); } return {a,b}; }}
 ];
+
+/* Weitere Moleküle als Bindungsgraph – die 3D-Form berechnet molLayout().
+   Kurzschreibweise: 'C:3 C:2 O:1' = Atome (mit Anzahl gebundener H), '0-1 1=2 2#3' = Einfach-/Doppel-/Dreifachbindung */
+function graph(atoms,bonds=''){
+  const a=[],b=[],hs=[];
+  atoms.split(' ').forEach(t=>{ const [el,h]=t.split(':'); a.push(el); hs.push(+(h||0)); });
+  bonds.split(' ').filter(Boolean).forEach(t=>{ const m=t.match(/^(\d+)([-=#])(\d+)$/); b.push([+m[1],+m[3],{'-':1,'=':2,'#':3}[m[2]]]); });
+  hs.forEach((h,i)=>{ for(let k=0;k<h;k++){ b.push([i,a.length,1]); a.push('H'); } });
+  return {atoms:a,bonds:b};
+}
+const countsOf=atoms=>atoms.reduce((c,s)=>(c[s]=(c[s]||0)+1,c),{});
+const M2=(id,f,name,atoms,bonds,desc)=>{ const g=graph(atoms,bonds); return {id,f,name,g,counts:countsOf(g.atoms),desc}; };
+MOLS.push(
+  M2('f2','F₂','Fluor','F F','0-1','Das reaktivste aller Elemente: Fluorgas greift sogar Glas an.'),
+  M2('cl2','Cl₂','Chlor','Cl Cl','0-1','Gelbgrünes, giftiges Gas. Heute vor allem zum Desinfizieren von Wasser und für Kunststoffe wie PVC.'),
+  M2('br2','Br₂','Brom','Br Br','0-1','Rotbraune Flüssigkeit, die schon bei Raumtemperatur stark verdampft.'),
+  M2('i2','I₂','Iod','I I','0-1','Violett-schwarze Kristalle, die beim Erwärmen direkt zu violettem Dampf werden.'),
+  M2('hf','HF','Fluorwasserstoff','F:1','','Gelöst heisst es Flusssäure – sie ätzt sogar Glas. So werden Muster in Glas geätzt.'),
+  M2('hbr','HBr','Bromwasserstoff','Br:1','','Stechend riechendes Gas; in Wasser gelöst eine starke Säure.'),
+  M2('hi','HI','Iodwasserstoff','I:1','','Gelöst die stärkste der Halogenwasserstoff-Säuren.'),
+  M2('h2o2','H₂O₂','Wasserstoffperoxid','O:1 O:1','0-1','Bleicht Haare und desinfiziert Wunden. Es zerfällt dabei in Wasser und Sauerstoff – darum schäumt es.'),
+  M2('h2s','H₂S','Schwefelwasserstoff','S:2','','Riecht nach faulen Eiern – schon in winzigen Mengen. Gebaut wie Wasser, nur mit Schwefel statt Sauerstoff.'),
+  M2('ph3','PH₃','Phosphan','P:3','','Giftiges Gas, gebaut wie Ammoniak: eine flache Pyramide.'),
+  M2('ch3oh','CH₃OH','Methanol','C:3 O:1','0-1','Der einfachste Alkohol. Giftig – schon wenig davon kann blind machen.'),
+  M2('c2h6','C₂H₆','Ethan','C:3 C:3','0-1','Bestandteil von Erdgas. Die beiden CH₃-Gruppen können sich um die Bindung drehen.'),
+  M2('c3h8','C₃H₈','Propan','C:3 C:2 C:3','0-1 1-2','Das Gas in Campingkochern und Grillflaschen.'),
+  M2('c4h10','C₄H₁₀','Butan','C:3 C:2 C:2 C:3','0-1 1-2 2-3','Steckt in Feuerzeugen: unter Druck flüssig, beim Austreten gasförmig.'),
+  M2('ethanol','C₂H₅OH','Ethanol','C:3 C:2 O:1','0-1 1-2','Der Alkohol in Wein und Bier – und in Desinfektionsmitteln.'),
+  M2('ch2o','CH₂O','Formaldehyd','C:2 O','0=1','Stechend riechendes Gas; konserviert biologische Präparate.'),
+  M2('hcooh','HCOOH','Ameisensäure','C:1 O O:1','0=1 0-2','Ameisen und Brennnesseln verspritzen sie – daher das Brennen auf der Haut.'),
+  M2('acetic','CH₃COOH','Essigsäure','C:3 C O O:1','0-1 1=2 1-3','Gibt Essig seinen sauren Geschmack.'),
+  M2('aceton','C₃H₆O','Aceton','C:3 C C:3 O','0-1 1-2 1=3','Löst Nagellack – und viele Kunststoffe.'),
+  M2('urea','CO(NH₂)₂','Harnstoff','C O N:2 N:2','0=1 0-2 0-3','1828 von Friedrich Wöhler im Labor hergestellt – der erste Naturstoff aus dem Reagenzglas. Heute ein wichtiger Dünger.'),
+  M2('chcl3','CHCl₃','Chloroform','C:1 Cl Cl Cl','0-1 0-2 0-3','Wurde im 19. Jahrhundert als Narkosemittel verwendet.'),
+  M2('freon','CCl₂F₂','FCKW (Freon-12)','C Cl Cl F F','0-1 0-2 0-3 0-4','Früher Kältemittel in Kühlschränken. Zerstört die Ozonschicht und ist darum heute verboten.'),
+  M2('cs2','CS₂','Schwefelkohlenstoff','S C S','0=1 1=2','Gebaut wie CO₂, nur mit Schwefel. Leicht entzündlich und übelriechend.'),
+  M2('so3','SO₃','Schwefeltrioxid','S O O O','0=1 0=2 0=3','Mit Wasser entsteht daraus Schwefelsäure – eine Ursache von saurem Regen. Schwefel geht hier sechs Bindungen ein.'),
+  M2('h2so4','H₂SO₄','Schwefelsäure','S O O O:1 O:1','0=1 0=2 0-3 0-4','Die meistproduzierte Chemikalie der Welt – zum Beispiel in Autobatterien.'),
+  M2('h3po4','H₃PO₄','Phosphorsäure','P O O:1 O:1 O:1','0=1 0-2 0-3 0-4','Gibt Cola den sauren Geschmack. Phosphor geht hier fünf Bindungen ein.'),
+  M2('sio2','SiO₂','Siliciumdioxid','Si O O','0=1 0=2','Quarz und Sand. Hier vereinfacht als Einzelmolekül – in Wirklichkeit ein riesiges, festes Netz.'),
+  M2('bf3','BF₃','Bortrifluorid','B F F F','0-1 0-2 0-3','Flach wie ein Dreieck: Bor hat nur drei Bindungen und kein freies Elektronenpaar.'),
+  M2('naoh','NaOH','Natriumhydroxid','Na O:1','0-1','Fest als Ätznatron, gelöst als Natronlauge – macht aus Fett Seife. Na⁺ und OH⁻ halten als Ionen zusammen.'),
+  M2('naf','NaF','Natriumfluorid','Na F','0-1','Schützt als Fluorid in Zahnpasta vor Karies. Eine Ionenverbindung aus Na⁺ und F⁻.'),
+  M2('kcl','KCl','Kaliumchlorid','K Cl','0-1','Kochsalz-Ersatz und Dünger. Eine Ionenverbindung aus K⁺ und Cl⁻.'),
+  M2('mgo','MgO','Magnesiumoxid','Mg O','0=1','Das weisse Pulver, das entsteht, wenn Magnesium grellweiss verbrennt. Mg²⁺ und O²⁻.'),
+  M2('mgcl2','MgCl₂','Magnesiumchlorid','Cl Mg Cl','0-1 1-2','Steckt im Meerwasser; daraus wird Magnesium gewonnen.'),
+  M2('cao','CaO','Calciumoxid','Ca O','0=1','Branntkalk – Grundstoff für Mörtel und Zement.'),
+  M2('cacl2','CaCl₂','Calciumchlorid','Cl Ca Cl','0-1 1-2','Streusalz, das auch bei grosser Kälte noch Eis schmilzt.'),
+  M2('al2o3','Al₂O₃','Aluminiumoxid','Al Al O O O','0=2 0-3 1-3 1=4','Korund: Saphir und Rubin sind Aluminiumoxid mit Spuren anderer Metalle. Schützt Alu vor dem Rosten.'),
+  M2('caco3','CaCO₃','Calciumcarbonat','Ca C O O O','1=2 1-3 1-4 0-3 0-4','Kalk, Kreide, Marmor und Eierschalen. Ca²⁺ und das Carbonat-Ion CO₃²⁻.'),
+  M2('nahco3','NaHCO₃','Natron','Na C O O O:1','1=2 1-3 1-4 0-3','Backpulver: setzt beim Backen CO₂ frei und lässt den Teig aufgehen.'),
+  M2('glucose','C₆H₁₂O₆','Traubenzucker (Glucose)','C:1 C:1 C:1 C:1 C:1 C:2 O O:1 O:1 O:1 O:1 O:1','0-1 1-2 2-3 3-4 4-6 6-0 4-5 0-7 1-8 2-9 3-10 5-11','Der Treibstoff deiner Zellen. Pflanzen stellen ihn bei der Fotosynthese aus CO₂ und Wasser her.'),
+  M2('caffeine','C₈H₁₀N₄O₂','Koffein','N C N C C C N C:1 N O O C:3 C:3 C:3','0-1 1-2 2-3 3=4 4-5 5-0 3-8 8=7 7-6 6-4 1=9 5=10 0-11 2-12 6-13','Macht Kaffee, Tee und Energydrinks anregend: Es blockiert im Gehirn die Müdigkeits-Signale.')
+);
 const molWrap=document.getElementById('mol'), mc=document.getElementById('mc');
 const mRenderer=new THREE.WebGLRenderer({canvas:mc,antialias:true,alpha:true});
 mRenderer.setPixelRatio(Math.min(devicePixelRatio,2)); mRenderer.outputEncoding=THREE.sRGBEncoding;
@@ -948,62 +1010,260 @@ const mk=new THREE.DirectionalLight(0xffffff,1.0); mk.position.set(4,6,8); mScen
 new ResizeObserver(()=>sizeGL(mRenderer,mCam,mc)).observe(mc.parentElement);
 let molObj=null, molOpen=false, molCur=null, molT=0;
 const cyl=new THREE.CylinderGeometry(1,1,1,16);
-function buildMol(m){
+
+/* ---------- Bindungsregeln ---------- */
+const KIT=['H','C','N','O','S','P','F','Cl','Br','I','B','Si','Li','Na','K','Mg','Ca','Al'];
+/* Mögliche Bindigkeiten (Wertigkeiten); bei Metallen = Ionenladung */
+const VAL={H:[1],F:[1],Cl:[1],Br:[1],I:[1],Li:[1],Na:[1],K:[1],O:[2],S:[2,4,6],Mg:[2],Ca:[2],N:[3],P:[3,5],B:[3],Al:[3],C:[4],Si:[4]};
+const VE={H:1,B:3,C:4,Si:4,N:5,P:5,O:6,S:6,F:7,Cl:7,Br:7,I:7}; // Aussenelektronen (für freie Elektronenpaare)
+const METAL=new Set(['Li','Na','K','Mg','Ca','Al']);
+const ELS=Object.fromEntries(EL.map(e=>[e.s,e]));
+const MAX_ATOMS=30;
+const SUBN='₀₁₂₃₄₅₆₇₈₉', subn=n=>n>1?String(n).split('').map(d=>SUBN[d]).join(''):'';
+const countsKey=c=>Object.keys(c).filter(k=>c[k]).sort().map(k=>k+c[k]).join('');
+const atomTotal=c=>Object.values(c).reduce((a,b)=>a+b,0);
+const hashStr=s=>[...s].reduce((h,ch)=>Math.imul(h^ch.charCodeAt(0),16777619),2166136261)>>>0;
+const countList=c=>KIT.filter(k=>c[k]).map(k=>c[k]+' '+k).join(' + ');
+function formulaOf(c){
+  const ks=Object.keys(c).filter(k=>c[k]);
+  const order=c.C ? ['C',...(c.H?['H']:[]),...ks.filter(k=>k!=='C'&&k!=='H').sort()]
+                  : ks.sort((a,b)=>(METAL.has(b)-METAL.has(a))||((ELS[a].en??0)-(ELS[b].en??0)));
+  return order.map(k=>k+subn(c[k])).join('');
+}
+const molMass=c=>Object.entries(c).reduce((s,[k,v])=>s+v*ELS[k].mass,0);
+const bothMetal=(a,b)=>METAL.has(a)&&METAL.has(b);
+
+/* Ein Bauversuch: Gerüst aus mehrbindigen Atomen, dann einbindige Atome anhängen,
+   übrige Bindungsstellen zu Doppel-/Dreifachbindungen oder Ringen schliessen. */
+function attempt(list,val,rand,att){
+  const n=list.length, free=val.slice(), adj=Array.from({length:n},()=>new Map()), key=list.map(()=>rand());
+  const grp=i=>val[i]>1?(METAL.has(list[i])?1:0):2;
+  const order=[...list.keys()].sort((i,j)=>(grp(i)-grp(j))||(val[j]-val[i])||(att<4?i-j:key[i]-key[j]));
+  const bond=(i,j)=>{ adj[i].set(j,(adj[i].get(j)||0)+1); adj[j].set(i,(adj[j].get(i)||0)+1); free[i]--; free[j]--; };
+  const placed=[], loose=[], enPref=att%2===0;
+  for(const i of order){
+    if(!placed.length){ placed.push(i); continue; }
+    const cands=placed.filter(p=>free[p]>0 && !bothMetal(list[p],list[i]));
+    if(!cands.length){ loose.push(i); continue; }
+    const wantsEN=(list[i]==='H'&&enPref)||METAL.has(list[i]);
+    const score=p=>(wantsEN?(ELS[list[p]].en||0)*10:0)+free[p]+(att>=4?rand()*1.5:0);
+    const p=cands.reduce((a,b)=>score(b)>score(a)?b:a);
+    bond(p,i); placed.push(i);
+  }
+  const dist=(s,t)=>{ const d=new Array(n).fill(-1); d[s]=0; const q=[s]; while(q.length){ const u=q.shift(); for(const v of adj[u].keys()) if(d[v]<0){ d[v]=d[u]+1; q.push(v); } } return d[t]; };
+  for(let guard=0;guard<200;guard++){
+    // 1. vorhandene Bindungen verstärken
+    const ups=[]; for(let i=0;i<n;i++) for(const [j,o] of adj[i]) if(i<j&&o<3&&free[i]>0&&free[j]>0) ups.push([i,j]);
+    if(ups.length){ const [i,j]=ups[att<4?0:Math.floor(rand()*ups.length)]; bond(i,j); continue; }
+    // 2. Ring schliessen (am liebsten Sechsring)
+    const fr=[...Array(n).keys()].filter(i=>free[i]>0&&!loose.includes(i)), rings=[];
+    for(const a of fr) for(const b of fr) if(a<b&&!adj[a].has(b)&&!bothMetal(list[a],list[b])){ const d=dist(a,b); if(d>0) rings.push([a,b,Math.abs(d-5)]); }
+    if(!rings.length) break;
+    rings.sort((x,y)=>x[2]-y[2]); const r=rings[att<4?0:Math.floor(rand()*Math.min(3,rings.length))]; bond(r[0],r[1]);
+  }
+  const bonds=[]; let multi=0;
+  for(let i=0;i<n;i++) for(const [j,o] of adj[i]) if(i<j){ bonds.push([i,j,o]); multi+=o-1; }
+  const used=n-loose.length, ringCount=Math.max(0,bonds.length-(used-1));
+  const openSum=free.reduce((s,v,i)=>s+(loose.includes(i)?0:v),0);
+  const hiVal=val.reduce((s,v,i)=>s+(v-VAL[list[i]][0]),0);
+  return {list,val,free,loose,bonds,openSum,bad:openSum+loose.length*2,score:(openSum+loose.length*2)*100+ringCount*3+multi+hiVal*2};
+}
+function solve(c,seed){
+  const list=[]; KIT.forEach(s=>{ for(let k=0;k<(c[s]||0);k++) list.push(s); });
+  const rand=rng(seed); let best=null;
+  for(let att=0;att<160;att++){
+    const val=list.map(s=>{ const o=VAL[s]; return att<4?o[0]:o[Math.floor(rand()*o.length)]; });
+    const r=attempt(list,val,rand,att);
+    if(!best||r.score<best.score) best=r;
+    if(best.bad===0&&att>=24) break;
+  }
+  return best;
+}
+function hintOf(r){
+  if(r.list.length>1&&r.list.every(s=>METAL.has(s))) return 'Metalle bilden miteinander keine Moleküle. Gib ein Nichtmetall dazu, zum Beispiel Cl oder O.';
+  if(r.list.length===1){ const s=r.list[0], v=r.val[0]; return `${ELS[s].name} allein ist noch kein Molekül – es will ${v} Bindung${v>1?'en':''} eingehen. Füge Partner hinzu.`; }
+  const parts=[];
+  if(r.loose.length){ const ls=countsOf(r.loose.map(i=>r.list[i]));
+    parts.push(`${r.loose.length===1?'1 Atom findet':r.loose.length+' Atome finden'} keinen Platz (${countList(ls)}) – nimm ${r.loose.length===1?'es':'sie'} weg oder füge Atome mit mehr Bindungen hinzu (C, N, O).`); }
+  if(r.openSum) parts.push(`Noch ${r.openSum} freie Bindung${r.openSum>1?'en':''} (gelbe Punkte) – füge z. B. ${r.openSum} H hinzu.`);
+  return parts.join(' ');
+}
+
+/* ---------- 3D-Anordnung (VSEPR): Bindungen als Federn, Elektronenpaare stossen sich ab ---------- */
+const LPF=1.6; // ergibt Wasser ≈ 104°, Ammoniak ≈ 107°, Methan 109,5°
+function molLayout(atoms,bonds,seed){
+  const n=atoms.length, rand=rng(seed), nb=Array.from({length:n},()=>[]), ord=new Array(n).fill(0);
+  bonds.forEach(([i,j,o])=>{ nb[i].push(j); nb[j].push(i); ord[i]+=o; ord[j]+=o; });
+  const R0=Math.cbrt(n)*1.4, P=atoms.map(()=>[(rand()-.5)*R0,(rand()-.5)*R0,(rand()-.5)*R0]);
+  const bl=(i,j,o)=>{ const r=(ELS[atoms[i]].rad+ELS[atoms[j]].rad)/100; return r*(o===2?.87:o===3?.78:1); };
+  const springs=bonds.map(([i,j,o])=>[i,j,bl(i,j,o)]), groups=[], bonded=new Set(bonds.map(([i,j])=>i<j?i+'|'+j:j+'|'+i));
+  for(let i=0;i<n;i++){
+    const s=atoms[i], dom=nb[i].slice();
+    if(!METAL.has(s)&&VE[s]!=null&&nb[i].length>=2){ const lp=Math.max(0,Math.floor((VE[s]-ord[i])/2));
+      for(let k=0;k<lp;k++){ const v=P.length; P.push([P[i][0]+rand()-.5,P[i][1]+rand()-.5,P[i][2]+rand()-.5]); springs.push([i,v,.6]); dom.push(v); } }
+    if(dom.length>=2) groups.push([i,dom]);
+  }
+  const m=P.length, F=P.map(()=>[0,0,0]), T=700;
+  for(let it=0;it<T;it++){
+    for(const f of F){ f[0]=f[1]=f[2]=0; }
+    for(const [i,j,L] of springs){ const d=[P[j][0]-P[i][0],P[j][1]-P[i][1],P[j][2]-P[i][2]], len=Math.hypot(...d)||1e-6, k=.5*(len-L)/len;
+      for(let a=0;a<3;a++){ F[i][a]+=k*d[a]; F[j][a]-=k*d[a]; } }
+    for(const [c,dom] of groups){ const u=dom.map(v=>{ const d=[P[v][0]-P[c][0],P[v][1]-P[c][1],P[v][2]-P[c][2]], l=Math.hypot(...d)||1e-6; return [d[0]/l,d[1]/l,d[2]/l,l]; });
+      for(let x=0;x<dom.length;x++) for(let y=x+1;y<dom.length;y++){ const w=[u[x][0]-u[y][0],u[x][1]-u[y][1],u[x][2]-u[y][2]], l=Math.max(Math.hypot(...w),.05),
+          k=.12*(dom[x]>=n?LPF:1)*(dom[y]>=n?LPF:1)/(l*l*l); // freie Elektronenpaare brauchen mehr Platz
+        for(let a=0;a<3;a++){ F[dom[x]][a]+=k*w[a]*u[x][3]; F[dom[y]][a]-=k*w[a]*u[y][3]; } } }
+    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){ if(bonded.has(i+'|'+j)||nb[i].some(x=>nb[j].includes(x))) continue; // Winkel regeln die Elektronenpaare
+      const d=[P[j][0]-P[i][0],P[j][1]-P[i][1],P[j][2]-P[i][2]], len=Math.hypot(...d)||1e-6, lim=nb[i].length&&nb[j].length?2.3:2.8;
+      if(len<lim){ const k=.25*(lim-len)/len; for(let a=0;a<3;a++){ F[i][a]-=k*d[a]; F[j][a]+=k*d[a]; } } }
+    const step=.35*(1-it/T)+.05;
+    for(let i=0;i<m;i++){ let s=step; const fl=Math.hypot(...F[i]); if(fl*s>.3) s=.3/fl; for(let a=0;a<3;a++) P[i][a]+=F[i][a]*s; }
+  }
+  return P.slice(0,n);
+}
+/* Graph -> darstellbare Struktur {a,b,stubs} */
+function graphStruct(atoms,bonds,free,loose,seed){
+  const pos=molLayout(atoms,bonds,seed);
+  const a=atoms.map((s,i)=>[s,...pos[i]]);
+  const b=bonds.map(([i,j,o])=>[i,j,bothMetal(atoms[i],atoms[j])||METAL.has(atoms[i])||METAL.has(atoms[j])?0:o]);
+  const stubs=[];
+  if(free) free.forEach((f,i)=>{ if(f<=0||(loose&&loose.includes(i))) return;
+    const p=new THREE.Vector3(...pos[i]), dir=new THREE.Vector3();
+    bonds.forEach(([x,y])=>{ if(x===i) dir.add(new THREE.Vector3(...pos[y]).sub(p).normalize()); if(y===i) dir.add(new THREE.Vector3(...pos[x]).sub(p).normalize()); });
+    dir.negate(); if(dir.lengthSq()<1e-4) dir.set(.3,1,.2); dir.normalize();
+    const perp=new THREE.Vector3().crossVectors(dir,Math.abs(dir.y)<.9?new THREE.Vector3(0,1,0):new THREE.Vector3(1,0,0)).normalize();
+    for(let k=0;k<f;k++){ const d=dir.clone().addScaledVector(perp,(k-(f-1)/2)*1.1).normalize(); stubs.push([i,...p.clone().addScaledVector(d,.95).toArray()]); } });
+  return {a,b,stubs};
+}
+
+/* ---------- Darstellung ---------- */
+function buildMol(st){
   disposeGroup(molObj); molObj=new THREE.Group();
-  const {a,b}=m.build(), S=1.5; const P=a.map(r=>new THREE.Vector3(r[1],r[2],r[3]).multiplyScalar(S));
+  const {a,b}=st, S=1.5; const P=a.map(r=>new THREE.Vector3(r[1],r[2],r[3]).multiplyScalar(S));
   const cen=P.reduce((s,p)=>s.add(p),new THREE.Vector3()).multiplyScalar(1/P.length); P.forEach(p=>p.sub(cen));
   const mats={};
   a.forEach((r,i)=>{ const el=r[0]; const [c,rad]=CPK[el]; mats[el]=mats[el]||new THREE.MeshStandardMaterial({color:c,roughness:.35,metalness:.05});
     const sz=r[4]?(el==='Na'?.55:.85):rad; const s=new THREE.Mesh(ball,mats[el]); s.scale.setScalar(sz); s.position.copy(P[i]); molObj.add(s); });
-  const bm=new THREE.MeshStandardMaterial({color:0xc9d1e0,roughness:.5}), bmThin=new THREE.MeshBasicMaterial({color:0x5a6478});
+  const bm=new THREE.MeshStandardMaterial({color:0xc9d1e0,roughness:.5}), bmThin=new THREE.MeshBasicMaterial({color:0x7a849a});
   const up=new THREE.Vector3(0,1,0);
-  b.forEach(([i,j,o])=>{ const A=P[i],B=P[j],dir=B.clone().sub(A),len=dir.length(),mid=A.clone().add(B).multiplyScalar(.5);
+  const rod=(A,B,rad,mat,off=0,perp=null)=>{ const dir=B.clone().sub(A),len=dir.length(),mid=A.clone().add(B).multiplyScalar(.5);
+    const c=new THREE.Mesh(cyl,mat); c.scale.set(rad,len,rad); c.position.copy(mid); if(perp) c.position.addScaledVector(perp,off);
+    c.quaternion.setFromUnitVectors(up,dir.normalize()); molObj.add(c); };
+  b.forEach(([i,j,o])=>{ const A=P[i],B=P[j],dir=B.clone().sub(A);
     let perp=dir.clone().cross(new THREE.Vector3(0,0,1)); if(perp.lengthSq()<1e-4) perp=dir.clone().cross(new THREE.Vector3(0,1,0)); perp.normalize();
     const n=Math.max(1,o), offs=n===1?[0]:n===2?[-.13,.13]:[-.2,0,.2], rad=o===0?.035:n===1?.1:.065;
-    offs.forEach(off=>{ const c=new THREE.Mesh(cyl,o===0?bmThin:bm); c.scale.set(rad,len,rad); c.position.copy(mid).addScaledVector(perp,off);
-      c.quaternion.setFromUnitVectors(up,dir.clone().normalize()); molObj.add(c); }); });
+    offs.forEach(off=>rod(A,B,rad,o===0?bmThin:bm,off,perp)); });
+  const ext=P.slice();
+  if(st.stubs&&st.stubs.length){
+    const sm=new THREE.MeshBasicMaterial({color:0xffd23f,transparent:true,opacity:.9}), sl=new THREE.MeshBasicMaterial({color:0xffd23f,transparent:true,opacity:.45});
+    st.stubs.forEach(([i,x,y,z])=>{ const q=new THREE.Vector3(x,y,z).multiplyScalar(S).sub(cen); rod(P[i],q,.03,sl);
+      const d=new THREE.Mesh(ball,sm); d.scale.setScalar(.13); d.position.copy(q); molObj.add(d); ext.push(q); });
+  }
   mScene.add(molObj);
-  const R=Math.max(...P.map(p=>p.length()))+1;
+  const R=Math.max(...ext.map(p=>p.length()))+1;
   const d=R/Math.tan(THREE.MathUtils.degToRad(mCam.fov/2))*(mCam.aspect<1?1/mCam.aspect:1)*0.95;
   mCam.position.set(d*.2,d*.35,d*.92).setLength(d); mControls.target.set(0,0,0); mControls.minDistance=R*0.8; mControls.maxDistance=d*3;
   molObj.scale.setScalar(reduceMotion?1:.01); molT=0;
 }
-function showMol(m){
-  molCur=m; buildMol(m);
-  document.getElementById('m-name').textContent=m.name;
-  document.getElementById('m-formula').textContent=m.f;
-  document.getElementById('m-desc').innerHTML=`<div class="label">Was steckt dahinter?</div>${m.desc}`;
-  document.getElementById('m-facts').innerHTML=[['Form',m.geom],['Bindung',m.bond],['Bindungswinkel',m.angle],['Atome',Object.entries(m.counts).map(([k,v])=>v+' × '+k).join(', ')]].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
-  document.getElementById('m-cap').innerHTML=Object.keys(m.counts).map(k=>`<span><b style="background:${CPK[k][0]}"></b>${EL.find(e=>e.s===k).name}</span>`).join('')+'<span>ziehen = drehen</span>';
-  document.querySelectorAll('#mol-list button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===m.id));
+function clearMol(){ disposeGroup(molObj); molObj=null; }
+const structOf=m=>m.build?m.build():graphStruct(m.g.atoms,m.g.bonds,null,null,hashStr(m.id));
+
+/* ---------- Seitenleiste ---------- */
+const $=id=>document.getElementById(id);
+function setPanel({name,f,desc,facts,els,stubs}){
+  $('m-name').textContent=name; $('m-formula').textContent=f||'';
+  $('m-desc').innerHTML=desc||''; $('m-desc').hidden=!desc;
+  $('m-facts').innerHTML=(facts||[]).map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  $('m-cap').innerHTML=(els||[]).map(k=>`<span><b style="background:${CPK[k][0]}"></b>${ELS[k].name}</span>`).join('')
+    +(stubs?'<span><b style="background:#ffd23f"></b>freie Bindung</span>':'')+((els||[]).length?'<span>ziehen = drehen</span>':'');
 }
-document.getElementById('mol-list').innerHTML=MOLS.map(m=>`<button data-id="${m.id}" aria-pressed="false">${m.f} · ${m.name}</button>`).join('');
-document.querySelectorAll('#mol-list button').forEach(b=>b.onclick=()=>showMol(MOLS.find(m=>m.id===b.dataset.id)));
-let tray={};
-const kit=document.getElementById('kit');
-Object.keys(CPK).forEach(el=>{ const b=document.createElement('button'); b.style.background=CPK[el][0]; if(el==='C') b.style.color='#fff';
-  b.innerHTML=el+'<span hidden></span>'; b.setAttribute('aria-label',EL.find(e=>e.s===el).name+' hinzufügen'); b.onclick=()=>{ tray[el]=(tray[el]||0)+1; updateTray(true); }; kit.appendChild(b); });
-/* build=true nur bei Klick auf ein Baukasten-Atom: Sonst würde beim Öffnen des Labors
-   (z. B. über «Kommt vor in») das gewünschte Molekül durch den alten Baukasten-Inhalt ersetzt. */
-function updateTray(build=false){
-  [...kit.children].forEach(b=>{ const el=b.firstChild.textContent, sp=b.querySelector('span'); sp.hidden=!tray[el]; sp.textContent=tray[el]||''; });
-  const keys=Object.keys(tray).filter(k=>tray[k]);
-  document.getElementById('tray').textContent=keys.length?keys.map(k=>tray[k]+' '+k).join(' + '):'Noch leer';
-  const msg=document.getElementById('kit-msg'); msg.className='msg';
-  if(!keys.length){ msg.textContent='Tippe Atome an. Passt die Zusammensetzung zu einem bekannten Molekül, baut es sich hier zusammen.'; return; }
-  const same=MOLS.find(m=>Object.keys(m.counts).length===keys.length && keys.every(k=>m.counts[k]===tray[k]));
-  if(same){ msg.className='msg ok'; msg.textContent=`Passt! Das ist ${same.name} (${same.f}).`; if(build && molCur!==same) showMol(same); return; }
-  const cands=MOLS.filter(m=>keys.every(k=>(m.counts[k]||0)>=tray[k]));
-  if(cands.length){ const m=cands.sort((x,y)=>Object.values(x.counts).reduce((a,b)=>a+b)-Object.values(y.counts).reduce((a,b)=>a+b))[0];
-    const miss=Object.entries(m.counts).filter(([k,v])=>v>(tray[k]||0)).map(([k,v])=>(v-(tray[k]||0))+' '+k).join(' + ');
-    msg.textContent=`Noch kein fertiges Molekül. Für ${m.name} (${m.f}) fehlt noch: ${miss}.`; }
-  else msg.textContent='Diese Kombination kenne ich nicht. Leere den Baukasten und versuch es neu.';
+function bondFacts(atoms,bonds){
+  let s=0,d=0,t=0,ion=0; bonds.forEach(([i,j,o])=>{ if(METAL.has(atoms[i])||METAL.has(atoms[j])) ion++; else if(o===1) s++; else if(o===2) d++; else t++; });
+  return [s&&s+' einfach',d&&d+' doppelt',t&&t+' dreifach',ion&&ion+' ionisch'].filter(Boolean).join(', ')||'–';
 }
-document.getElementById('kit-clear').onclick=()=>{ tray={}; updateTray(); };
-function openMol(id){ molOpen=true; molWrap.hidden=false; sizeGL(mRenderer,mCam,mc); showMol(MOLS.find(m=>m.id===id)||molCur||MOLS[5]); updateTray(); document.getElementById('m-close').focus({preventScroll:true}); }
-function closeMol(){ molOpen=false; molWrap.hidden=true; disposeGroup(molObj); molObj=null; canvas.focus({preventScroll:true}); }
-document.getElementById('open-mol').onclick=()=>openMol(molCur?molCur.id:'h2o');
-document.getElementById('m-close').onclick=closeMol;
+const fmtMolMass=c=>molMass(c).toLocaleString('de-CH',{maximumFractionDigits:2})+' g/mol';
+function knownPanel(m){
+  const facts=[];
+  if(m.geom) facts.push(['Form',m.geom],['Bindung',m.bond],['Bindungswinkel',m.angle]);
+  else facts.push(['Bindungen',bondFacts(m.g.atoms,m.g.bonds)]);
+  facts.push(['Atome',countList(m.counts)],['Molare Masse',fmtMolMass(m.counts)]);
+  return {name:m.name,f:m.f,desc:`<div class="label">Was steckt dahinter?</div>${m.desc}`,facts,els:KIT.filter(k=>m.counts[k])};
+}
+
+/* ---------- Baukasten ---------- */
+let tray={}, hist=[];
+const FOUND_KEY='periodensystem3d-entdeckt';
+let found=new Set(); try{ found=new Set(JSON.parse(localStorage.getItem(FOUND_KEY)||'[]')); }catch(_){}
+const saveFound=()=>{ try{ localStorage.setItem(FOUND_KEY,JSON.stringify([...found])); }catch(_){} };
+const BYKEY={}; MOLS.forEach(m=>{ const k=countsKey(m.counts); if(BYKEY[k]) console.warn('Gleiche Formel',m.id,BYKEY[k].id); BYKEY[k]=m; });
+
+const kit=$('kit');
+KIT.forEach(el=>{ const b=document.createElement('button'), col=new THREE.Color(CPK[el][0]);
+  b.style.background=CPK[el][0]; b.dataset.el=el; if(col.r*.3+col.g*.59+col.b*.11<.5) b.style.color='#fff';
+  b.innerHTML=el+'<span hidden></span>'; b.title=ELS[el].name; b.setAttribute('aria-label',ELS[el].name+' hinzufügen');
+  b.onclick=()=>addAtom(el); kit.appendChild(b); });
+function addAtom(el){ if(atomTotal(tray)>=MAX_ATOMS) return; tray[el]=(tray[el]||0)+1; hist.push(el); refreshLab(); }
+$('kit-undo').onclick=()=>{ const el=hist.pop(); if(!el) return; if(!--tray[el]) delete tray[el]; refreshLab(); };
+$('kit-clear').onclick=()=>{ tray={}; hist=[]; refreshLab(); };
+$('kit-tip').onclick=()=>{
+  const rest=MOLS.filter(m=>!found.has(m.id)).sort((a,b)=>atomTotal(a.counts)-atomTotal(b.counts)), msg=$('kit-msg');
+  if(!rest.length){ msg.className='msg ok'; msg.textContent='Du hast alle Moleküle entdeckt – stark!'; return; }
+  const m=rest[Math.floor(Math.random()*Math.min(5,rest.length))];
+  msg.className='msg'; msg.textContent=`💡 Versuch mal: ${countList(m.counts)}`;
+};
+function refreshLab(){
+  const n=atomTotal(tray);
+  [...kit.children].forEach(b=>{ const el=b.dataset.el, sp=b.querySelector('span'); sp.hidden=!tray[el]; sp.textContent=tray[el]||''; b.disabled=n>=MAX_ATOMS; });
+  $('kit-undo').disabled=!hist.length; $('kit-clear').disabled=!n;
+  $('tray').textContent=n?countList(tray)+(n>=MAX_ATOMS?`  (max. ${MAX_ATOMS})`:''):''; $('tray').hidden=!n;
+  const msg=$('kit-msg'); msg.className='msg';
+  if(!n){
+    molCur=null; clearMol();
+    setPanel({name:'Molekül-Labor',desc:`<div class="label">So geht's</div>Tippe oben Atome an. Jedes Atom will eine bestimmte Zahl Bindungen eingehen: <b>H</b> 1 · <b>O</b> 2 · <b>N</b> 3 · <b>C</b> 4. Sind alle Bindungen besetzt, ist dein Molekül fertig. Bekannte Moleküle landen in deiner Sammlung.`});
+    msg.textContent='Der Baukasten ist leer.'; renderList(); return;
+  }
+  const key=countsKey(tray), known=BYKEY[key];
+  if(known){
+    const isNew=!found.has(known.id); found.add(known.id); saveFound(); molCur=known;
+    buildMol(structOf(known)); setPanel(knownPanel(known));
+    msg.className=isNew?'msg new':'msg ok';
+    msg.textContent=isNew?`🎉 Neu entdeckt: ${known.name}! (${found.size} von ${MOLS.length})`:`Passt! Das ist ${known.name}.`;
+    renderList(); return;
+  }
+  molCur=null;
+  const res=solve(tray,hashStr(key)), st=graphStruct(res.list,res.bonds,res.free,res.loose,hashStr(key));
+  buildMol(st);
+  const els=KIT.filter(k=>tray[k]);
+  if(res.bad===0){
+    msg.className='msg ok'; msg.textContent='Chemisch möglich! Alle Bindungen sind besetzt.';
+    setPanel({name:'Eigenes Molekül',f:formulaOf(tray),els,
+      desc:`<div class="label">Was steckt dahinter?</div>Jedes Atom hat genau so viele Bindungen, wie es braucht. Das ist <i>eine</i> mögliche Anordnung – mit denselben Atomen gibt es oft mehrere (Isomere). Dieses Molekül ist nicht in der Sammlung, aber du hast es selbst gebaut!`,
+      facts:[['Bindungen',bondFacts(res.list,res.bonds)],['Atome',countList(tray)],['Molare Masse',fmtMolMass(tray)]]});
+  } else {
+    msg.className='msg warn'; msg.textContent=hintOf(res);
+    setPanel({name:'Im Bau …',f:formulaOf(tray),els,stubs:st.stubs.length>0,facts:[['Atome',countList(tray)],['Freie Bindungen',res.openSum]]});
+  }
+  renderList();
+}
+function renderList(){
+  const list=MOLS.filter(m=>found.has(m.id));
+  $('found-label').textContent=`Entdeckt · ${list.length} von ${MOLS.length}`;
+  $('mol-list').innerHTML=list.length?list.map(m=>`<button data-id="${m.id}" aria-pressed="${molCur===m}">${m.f} · ${m.name}</button>`).join('')
+    :'<div class="empty">Noch nichts entdeckt. Bau dein erstes Molekül – zum Beispiel aus 2 H und 1 O.</div>';
+  $('mol-list').querySelectorAll('button').forEach(b=>b.onclick=()=>loadMol(b.dataset.id));
+}
+/* Ein entdecktes Molekül in den Baukasten laden – Anzeige und Baukasten passen so immer zusammen */
+function loadMol(id){
+  const m=MOLS.find(x=>x.id===id); if(!m||!found.has(id)) return;
+  tray={...m.counts}; hist=[]; KIT.forEach(k=>{ for(let i=0;i<(tray[k]||0);i++) hist.push(k); }); refreshLab();
+}
+function openMol(id){
+  molOpen=true; molWrap.hidden=false; sizeGL(mRenderer,mCam,mc);
+  if(id&&found.has(id)) loadMol(id); else refreshLab();
+  $('m-close').focus({preventScroll:true});
+}
+function closeMol(){ molOpen=false; molWrap.hidden=true; clearMol(); canvas.focus({preventScroll:true}); }
+$('open-mol').onclick=()=>openMol();
+$('m-close').onclick=closeMol;
 molWrap.addEventListener('pointerdown',ev=>{ if(ev.target===molWrap) closeMol(); });
 
 /* ---------- Quiz ---------- */
@@ -1119,7 +1379,7 @@ function frame(now){
     else { if(aView==='bohr') updateAtom(dt,now/1000); else if(orbObj){ atomT+=dt; orbObj.scale.setScalar(Math.max(easeOut(atomT/0.9),0.01)); }
       aControls.update(); aRenderer.render(aScene,aCam); }
   }
-  if(molOpen && molObj){ molT+=dt; molObj.scale.setScalar(Math.max(easeOut(molT/0.7),0.01)); mControls.update(); mRenderer.render(mScene,mCam); }
+  if(molOpen){ if(molObj){ molT+=dt; molObj.scale.setScalar(Math.max(easeOut(molT/0.7),0.01)); } mControls.update(); mRenderer.render(mScene,mCam); }
   requestAnimationFrame(frame);
 }
 
