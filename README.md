@@ -25,3 +25,14 @@ Die ganze Seite steckt in einer einzigen Datei: `index.html`. Three.js und die S
 3. Auf GitHub: **Settings → Pages → Build and deployment → Source: «Deploy from a branch»**, Branch `main`, Ordner `/ (root)`, **Save**.
 4. Nach ein bis zwei Minuten ist die Seite erreichbar unter
    `https://DEIN-NAME.github.io/periodensystem/`
+
+## Cloudflare Pages
+
+Eigenes Pages-Projekt `periodensystem`, online unter https://periodensystem-49a.pages.dev/
+
+Neu veröffentlichen (nur `index.html` hochladen, nicht den ganzen Ordner):
+
+```powershell
+New-Item -ItemType Directory -Force dist | Out-Null; Copy-Item index.html dist
+wrangler pages deploy dist --project-name periodensystem --branch main
+```
