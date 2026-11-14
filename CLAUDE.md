@@ -4,7 +4,7 @@
 
 - **Live:** https://periodensystem.thinklabs.workers.dev
 - **Produktions-Branch:** `main`
-- **Aufbau:** Alles in einer index.html. Worker liefert nur index.html aus (wrangler.jsonc, .assetsignore).
+- **Aufbau:** Die ganze Seite steckt in einer index.html. `worker.js` liefert sie als statische Datei aus und stellt die API für den Klassenmodus bereit (`/api/klasse`, ein Durable Object `Klasse` pro Klasse, Daten werden nach 2 Tagen gelöscht). Konfiguration: wrangler.jsonc; was nicht online geht: .assetsignore.
 
 ## Regeln für Claude (gelten in jeder Sitzung, auch in der Cloud und am Handy)
 

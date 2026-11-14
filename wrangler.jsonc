@@ -1,14 +1,26 @@
-// Cloudflare Worker (nur statische Dateien). Cloudflare ist direkt mit GitHub verbunden:
+// Cloudflare Worker. Cloudflare ist direkt mit GitHub verbunden:
 // Jeder Push auf main wird automatisch veröffentlicht unter https://periodensystem.thinklabs.workers.dev
-// Welche Dateien NICHT hochgeladen werden, steht in .assetsignore (nur index.html geht online).
+// worker.js liefert index.html aus (statische Dateien) und stellt die API für den Klassenmodus bereit (/api/klasse).
+// Welche Dateien NICHT als Seite hochgeladen werden, steht in .assetsignore.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "periodensystem",
+  "main": "worker.js",
   "compatibility_date": "2026-11-13",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "directory": "."
-  }
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  // Klassenmodus: jede Klasse ist ein Durable Object (Speicher wird nach 2 Tagen gelöscht)
+  "durable_objects": {
+    "bindings": [
+      { "name": "KLASSE", "class_name": "Klasse" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Klasse"] }
+  ]
 }

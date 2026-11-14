@@ -1,12 +1,16 @@
 # Periodensystem 3D
 
-Interaktives 3D-Periodensystem im Browser: drehbare Anordnungen (Tabelle, Kugel, Helix, Würfel), Färbung nach Kategorien, Werten, Temperatur und Entdeckungsjahr, Bohr-Modell und Orbitale für jedes Element, ein Molekül-Labor mit Baukasten und ein Quiz.
+Interaktives 3D-Periodensystem im Browser: drehbare Anordnungen (Tabelle, Kugel, Helix, Würfel), Färbung nach Kategorien, Werten, Temperatur, Entdeckungsjahr, Trends, Häufigkeit (Universum, Erdkruste, Körper) und Gefahren (GHS), Bohr-Modell, Orbitale, Zerfall, Spektrum und Isotope (Nuklidkarte) für jedes Element, ein Molekül-Labor mit Baukasten, ein Batterie-Labor (Spannungsreihe), ein Quiz mit Klassenmodus und eine Übersicht über den eigenen Lernfortschritt.
 
-Die ganze Seite steckt in einer einzigen Datei: `index.html`. Three.js und die Schriften werden von einem CDN geladen – es braucht also keinen Build-Schritt.
+## Klassenmodus
+
+Eine Lehrperson eröffnet unter «Klasse» eine Klasse und bekommt einen 5-stelligen Code. Alle, die beitreten, erhalten dieselben Fragen in derselben Reihenfolge; die Rangliste erscheint live bei der Lehrperson. Die API dafür steckt in `worker.js` (`/api/klasse`), jede Klasse ist ein Durable Object. Gespeichert werden nur Spitzname, Punkte und Zeit – nach 2 Tagen wird alles automatisch gelöscht. Lokal testen: `npx wrangler dev`.
+
+Die ganze Seite steckt in einer einzigen Datei: `index.html`. Three.js und die Schriften werden von einem CDN geladen – es braucht also keinen Build-Schritt. Nur der Klassenmodus braucht den Worker (`worker.js`).
 
 ## Lokal ansehen
 
-`index.html` einfach im Browser öffnen (Doppelklick).
+`index.html` einfach im Browser öffnen (Doppelklick). Alles ausser dem Klassenmodus funktioniert so. Mit Klassenmodus: `npx wrangler dev`.
 
 ## Auf GitHub Pages veröffentlichen
 
@@ -31,4 +35,4 @@ Die ganze Seite steckt in einer einzigen Datei: `index.html`. Three.js und die S
 Cloudflare Worker `periodensystem`, online unter https://periodensystem.thinklabs.workers.dev
 
 Cloudflare ist direkt mit diesem GitHub-Repo verbunden: **Jeder Push auf `main` wird automatisch veröffentlicht.**
-Nichts von Hand hochladen. Konfiguration: `wrangler.jsonc`, ausgeschlossene Dateien: `.assetsignore` (nur `index.html` geht online).
+Nichts von Hand hochladen. Konfiguration: `wrangler.jsonc` (Worker `worker.js` + Durable Object `Klasse`), ausgeschlossene Dateien: `.assetsignore` (als Seite geht nur `index.html` mit den Favicons online).
