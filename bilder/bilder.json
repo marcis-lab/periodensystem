@@ -1,4 +1,11 @@
 {
+ "Al": {
+  "artist": "Unknown authorUnknown author",
+  "file": "Aluminium-4.jpg",
+  "license": "CC BY 3.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Aluminium-4.jpg",
+  "src": "/bilder/el/Al.jpg"
+ },
  "B": {
   "artist": "James L Marshall",
   "file": "Boron_R105.jpg",
@@ -82,5 +89,19 @@
   "license": "Public domain",
   "page": "https://commons.wikimedia.org/wiki/File:Liquid_oxygen_in_a_beaker_(cropped_and_retouched).jpg",
   "src": "/bilder/el/O.jpg"
+ },
+ "P": {
+  "artist": "Tomihahndorf",
+  "file": "Phosphor_rot.jpg",
+  "license": "Public domain",
+  "page": "https://commons.wikimedia.org/wiki/File:Phosphor_rot.jpg",
+  "src": "/bilder/el/P.jpg"
+ },
+ "Si": {
+  "artist": "Rasiel Suarez on behalf of Luciteria LLC",
+  "file": "A_piece_of_zone_refined_silicon.JPG",
+  "license": "CC BY-SA 4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:A_piece_of_zone_refined_silicon.JPG",
+  "src": "/bilder/el/Si.jpg"
  }
 }
