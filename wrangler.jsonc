@@ -1,0 +1,14 @@
+// Cloudflare Worker (nur statische Dateien). Cloudflare ist direkt mit GitHub verbunden:
+// Jeder Push auf main wird automatisch veröffentlicht unter https://periodensystem.thinklabs.workers.dev
+// Welche Dateien NICHT hochgeladen werden, steht in .assetsignore (nur index.html geht online).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "periodensystem",
+  "compatibility_date": "2026-11-13",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "."
+  }
+}

@@ -1,0 +1,15 @@
+# Nur die Webseite veröffentlichen, nicht die Projektdateien
+.git
+.github
+.claude
+.wrangler
+.dev.vars*
+.env*
+node_modules
+dist
+.DS_Store
+Thumbs.db
+README.md
+.gitignore
+.assetsignore
+wrangler.jsonc

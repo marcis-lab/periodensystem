@@ -26,13 +26,9 @@ Die ganze Seite steckt in einer einzigen Datei: `index.html`. Three.js und die S
 4. Nach ein bis zwei Minuten ist die Seite erreichbar unter
    `https://DEIN-NAME.github.io/periodensystem/`
 
-## Cloudflare Pages
+## Cloudflare
 
-Eigenes Pages-Projekt `periodensystem`, online unter https://periodensystem-49a.pages.dev/
+Cloudflare Worker `periodensystem`, online unter https://periodensystem.thinklabs.workers.dev
 
-Neu veröffentlichen (nur `index.html` hochladen, nicht den ganzen Ordner):
-
-```powershell
-New-Item -ItemType Directory -Force dist | Out-Null; Copy-Item index.html dist
-wrangler pages deploy dist --project-name periodensystem --branch main
-```
+Cloudflare ist direkt mit diesem GitHub-Repo verbunden: **Jeder Push auf `main` wird automatisch veröffentlicht.**
+Nichts von Hand hochladen. Konfiguration: `wrangler.jsonc`, ausgeschlossene Dateien: `.assetsignore` (nur `index.html` geht online).
