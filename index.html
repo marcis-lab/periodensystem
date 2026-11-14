@@ -138,6 +138,34 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
 .chal-bar i{display:block;height:100%;width:100%;background:#ffb347;transition:width .25s linear}
 .chal-bar.low i{background:var(--bad)}
 .chal-meta{display:flex;justify-content:space-between;gap:10px;font:500 11px var(--f-mono);color:var(--muted)}
+#cmp-pick{position:fixed;z-index:7;top:calc(var(--barH,60px) + env(safe-area-inset-top,0px) + 22px);left:50%;transform:translateX(-50%);padding:10px 12px 10px 16px;display:flex;gap:12px;align-items:center;font:500 14px var(--f-body);width:max-content;max-width:calc(100% - 32px)}
+#cmp-pick .btn{flex:none}
+.cmpt{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 10px;font-size:12.5px;align-items:center}
+.cmpt .h{font:700 18px var(--f-display);text-align:center}
+.cmpt dt{color:var(--muted)}
+.cmpt dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:3px}
+.cmpt dd i{display:block;height:4px;border-radius:2px;min-width:2px}
+.cmpt dd.win{color:var(--fg);font-weight:600}
+.mini button.on{border-color:var(--accent);color:var(--accent)}
+.badges summary{cursor:pointer;font:600 13px var(--f-body);color:var(--fg);padding:6px 0}
+.badges summary span{color:var(--muted);font:500 12px var(--f-mono)}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px}
+.bd{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--muted)}
+.bd b{font:600 12.5px var(--f-body);color:var(--fg)}
+.bd .em{font-size:20px;line-height:1}
+.bd.off{opacity:.45;filter:grayscale(1)}
+.bd i{display:block;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.bd i u{display:block;height:100%;background:var(--good)}
+.toast{position:absolute;z-index:4;top:56px;left:50%;transform:translateX(-50%);background:#1b2a1f;border:1px solid var(--good);color:var(--fg);border-radius:999px;padding:8px 16px;font:600 13px var(--f-body);white-space:nowrap;animation:rise .35s}
+.rxb{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.rxcols{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start}
+.rxcols b{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rxarrow{font:700 20px var(--f-display);padding-top:18px}
+.rxlist{display:flex;flex-direction:column;gap:5px;margin-top:6px;min-height:28px}
+.rxi{display:flex;align-items:center;gap:4px;font:500 13px var(--f-mono)}
+.rxi span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rxi button{width:22px;height:22px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer;font:600 12px var(--f-mono);padding:0}
+#rx-pick{background:var(--panel-solid);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:500 12px var(--f-body);max-width:100%;flex:1 1 160px}
 #m-info{background:rgba(10,13,19,.78);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:62ch}
 .kit button span{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--fg);color:#0a0d13;font:600 11px/18px var(--f-mono);padding:0 4px}
 .tray{font:500 14px var(--f-mono);min-height:20px}
@@ -194,6 +222,7 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
     <button id="m-prop" aria-pressed="false">Werte</button>
     <button id="m-state" aria-pressed="false">Temperatur</button>
     <button id="m-disc" aria-pressed="false">Entdeckung</button>
+    <button id="m-trend" aria-pressed="false">Trends</button>
   </div>
   <div class="seg glass">
     <button id="t-height" aria-pressed="false" title="Kachelhöhe nach Wert">Höhe</button>
@@ -230,11 +259,31 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
     <div class="mini" id="temp-presets"></div>
     <div class="keys" id="state-keys"></div>
   </div>
+  <div class="panel glass" id="d-trend" hidden>
+    <div class="mini" id="trend-chips"></div>
+    <div id="trend-txt" style="flex:1 1 320px;font-size:12.5px;line-height:1.45;color:var(--muted)"></div>
+  </div>
   <div class="panel glass" id="d-disc" hidden>
     <div class="mini"><button id="play" aria-label="Zeitreise abspielen">▶ Abspielen</button></div>
     <div><div class="lbl">Jahr</div><div class="big" id="year-out">2010</div></div>
     <input type="range" id="year" min="1599" max="2010" step="1" value="2010" aria-label="Jahr">
     <div class="keys" id="disc-keys"></div>
+  </div>
+</div>
+
+<div class="glass" id="cmp-pick" hidden><span id="cmp-pick-txt"></span><button class="btn" id="cmp-cancel">Abbrechen</button></div>
+
+<!-- Element-Vergleich -->
+<div class="wrap" id="cmp" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="cmp-title">
+    <button class="close" id="cmp-close" aria-label="Schliessen">×</button>
+    <div class="stage"><canvas id="cmpc" aria-label="Grösse und Elektronenhülle im Vergleich"></canvas></div>
+    <div class="side">
+      <div class="top"><div><h2 id="cmp-title"></h2><div class="cat">Element-Vergleich</div></div></div>
+      <div class="cmpt" id="cmp-table"></div>
+      <p class="note" id="cmp-note"></p>
+      <div class="nav"><button id="cmp-swap">⇄ Tauschen</button><button id="cmp-other">Anderes Element</button></div>
+    </div>
   </div>
 </div>
 
@@ -257,6 +306,7 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
         <button data-v="bohr" aria-pressed="true">Bohr-Modell</button>
         <button data-v="orb" aria-pressed="false">Orbitale</button>
         <button data-v="decay" aria-pressed="false">Zerfall</button>
+        <button data-v="spec" aria-pressed="false">Spektrum</button>
       </div>
       <div class="cap" id="a-cap"></div>
     </div>
@@ -272,7 +322,7 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
       <dl class="facts" id="a-facts"></dl>
       <div id="a-molwrap"><div class="label">Kommt vor in</div><div class="molchips" id="a-mols"></div></div>
       <p class="note">Vereinfachtes Bohr’sches Atommodell, nicht massstabsgetreu: In Wirklichkeit ist der Kern rund 100 000-mal kleiner als die Atomhülle.</p>
-      <div class="nav"><button id="a-prev">← Vorheriges</button><button id="a-next">Nächstes →</button></div>
+      <div class="nav"><button id="a-prev">← Vorheriges</button><button id="a-cmp">⚖ Vergleichen</button><button id="a-next">Nächstes →</button></div>
     </div>
   </div>
 </div>
@@ -288,13 +338,16 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
         <button data-v="3d" aria-pressed="true">3D</button>
         <button data-v="lewis" aria-pressed="false">Lewis</button>
         <button data-v="pol" aria-pressed="false">Polarität</button>
+        <button data-v="kal" aria-pressed="false">Kalotte</button>
       </div>
+      <div class="toast" id="m-toast" hidden></div>
       <div class="cap"><div class="txt" id="m-info" hidden></div><div class="row" id="m-cap"></div></div>
     </div>
     <div class="side">
       <div class="modes" id="m-modes" role="group" aria-label="Modus">
         <button data-m="build" aria-pressed="true">🧪 Bauen</button>
         <button data-m="react" aria-pressed="false">💥 Reaktionen</button>
+        <button data-m="hb" aria-pressed="false">💧 H-Brücken</button>
       </div>
       <div class="top"><div><h2 id="m-name"></h2><div class="cat" id="m-formula"></div></div></div>
       <div class="sec" id="sec-build">
@@ -313,15 +366,35 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
         <div class="msg" id="kit-msg" aria-live="polite"></div>
         <div class="msg sel" id="kit-sel"></div>
         <div class="mini"><button id="kit-fill">H auffüllen</button><button id="kit-link" aria-pressed="false">⤳ Verbinden</button><button id="kit-del">🗑 Entfernen</button><button id="kit-undo">↶ Zurück</button><button id="kit-clear">Leeren</button></div>
-        <div class="mini"><button id="kit-tip">💡 Tipp</button><button id="kit-share">🔗 Teilen</button><button id="ch-start">🏆 Challenge</button></div>
+        <div class="mini"><button id="kit-iso">🔀 Andere Anordnung</button><button id="kit-tip">💡 Tipp</button><button id="kit-share">🔗 Teilen</button><button id="ch-start">🏆 Challenge</button></div>
         <div class="fact" id="m-desc"></div>
         <dl class="facts" id="m-facts"></dl>
         <div><div class="label" id="found-label">Entdeckt</div><div class="molchips" id="mol-list"></div></div>
+        <details class="badges"><summary>🏅 Abzeichen <span id="bd-count"></span></summary><div class="bgrid" id="bd-grid"></div></details>
       </div>
       <div class="sec" id="sec-react" hidden>
         <div class="fact" id="rx-desc"></div>
         <div class="mini"><button id="rx-play">▶ Nochmal abspielen</button></div>
-        <div><div class="label">Reaktion wählen</div><div class="molchips" id="rx-list"></div></div>
+        <div class="rxb">
+          <div class="label">⚖️ Eigene Reaktion bauen</div>
+          <div class="rxcols">
+            <div><b>Ausgangsstoffe</b><div class="rxlist" id="rxL"></div></div>
+            <div class="rxarrow">→</div>
+            <div><b>Produkte</b><div class="rxlist" id="rxR"></div></div>
+          </div>
+          <div class="mini"><select id="rx-pick" aria-label="Stoff wählen"></select><button id="rx-addL">+ links</button><button id="rx-addR">+ rechts</button></div>
+          <div class="msg" id="rx-check"></div>
+          <div class="mini"><button id="rx-auto">⚖ Ausgleichen</button><button id="rx-run">▶ Starten</button><button id="rx-clear">Leeren</button></div>
+        </div>
+        <div><div class="label">Bekannte Reaktionen</div><div class="molchips" id="rx-list"></div></div>
+      </div>
+      <div class="sec" id="sec-hb" hidden>
+        <div class="fact"><div class="label">Was hält Wasser zusammen?</div>Im Wasser ist der Sauerstoff δ− und die Wasserstoffe sind δ+. Ein δ+-Wasserstoff zieht den δ−-Sauerstoff des Nachbarmoleküls an: eine <b>Wasserstoffbrücke</b> (gelb gestrichelt). Sie ist rund 20-mal schwächer als eine echte Bindung – aber es gibt Milliarden davon.</div>
+        <div><div class="label">Temperatur</div><div class="big" id="hb-tout" style="font:700 22px var(--f-display)">20 °C</div>
+          <input type="range" id="hb-temp" min="-20" max="150" value="20" aria-label="Temperatur" style="width:100%;accent-color:var(--accent)"></div>
+        <div class="msg" id="hb-state"></div>
+        <dl class="facts" id="hb-facts"></dl>
+        <p class="note">Ohne Wasserstoffbrücken würde Wasser – so leicht wie es ist – schon bei etwa −80 °C sieden. Dann gäbe es auf der Erde kein flüssiges Wasser und kein Leben.</p>
       </div>
     </div>
   </div>
@@ -597,6 +670,8 @@ function build(){
 /* Färbung je Modus */
 function tileLook(e){
   if(colorMode==='prop'){ const v=e[propKey]; return v==null?{c:'#4a5266',s:'–'}:{c:heat(normProp(propKey,v)),s:PROPS[propKey].f(v)}; }
+  if(colorMode==='trend'){ if(trendKey==='met'){ const v=METALLIC[e.cat]; return {c:heat(v),s:v>.6?'Metall':v>.3?'Halbmetall':'Nichtmetall'}; }
+    const v=e[trendKey]; return v==null?{c:'#4a5266',s:'–'}:{c:heat(normProp(trendKey,v)),s:PROPS[trendKey].f(v)}; }
   if(colorMode==='state'){ const st=stateAt(e,temp); return {c:STATE[st].c,s:STATE[st].n}; }
   if(colorMode==='disc'){ return {c:eraOf(e.year).c,s:fmtYear(e.year)}; }
   return {c:CAT[e.cat].c,s:fmtMass(e)};
@@ -701,12 +776,13 @@ document.getElementById('play').onclick=ev=>{ playing=!playing; ev.currentTarget
 
 function setMode(m){
   colorMode=m;
-  ['cat','prop','state','disc'].forEach(k=>{ document.getElementById('m-'+k).setAttribute('aria-pressed',k===m); document.getElementById('d-'+k).hidden=k!==m; });
+  ['cat','prop','state','disc','trend'].forEach(k=>{ document.getElementById('m-'+k).setAttribute('aria-pressed',k===m); document.getElementById('d-'+k).hidden=k!==m; });
+  if(m==='trend') showTrend(trendKey); else clearTrend();
   if(m!=='disc'){ playing=false; document.getElementById('play').textContent='▶ Abspielen'; }
   if(m==='prop') updateGrad();
   queueRefresh();
 }
-['cat','prop','state','disc'].forEach(k=>document.getElementById('m-'+k).onclick=()=>setMode(k));
+['cat','prop','state','disc','trend'].forEach(k=>document.getElementById('m-'+k).onclick=()=>setMode(k));
 
 /* ---------- Atom-Ansicht ---------- */
 const atomWrap=document.getElementById('atom'), ac=document.getElementById('ac'), dc=document.getElementById('dc');
@@ -752,9 +828,9 @@ function buildAtom(e){
     const ringM=new THREE.LineBasicMaterial({color:col,transparent:true,opacity:0});
     g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),ringM));
     const eM=new THREE.MeshBasicMaterial({color:col.clone().lerp(new THREE.Color('#ffffff'),0.35),transparent:true,opacity:0});
-    const eI=new THREE.InstancedMesh(ball,eM,cnt); g.add(eI);
+    const eI=new THREE.InstancedMesh(ball,eM,cnt+3); eI.count=cnt; g.add(eI);      // +3 Plätze für aufgenommene Elektronen (Ionen)
     const haloM=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    const hI=new THREE.InstancedMesh(ball,haloM,cnt); g.add(hI);
+    const hI=new THREE.InstancedMesh(ball,haloM,cnt+3); hI.count=cnt; g.add(hI);
     group.add(g);
     return {g,r,cnt,eI,hI,ringM,eM,haloM,speed:1.5/Math.pow(k+1,0.75),phase:rand()*6.28};
   });
@@ -774,14 +850,23 @@ function updateAtom(dt,time){
   atom.nucleus.scale.setScalar(Math.max(ease(atomT/0.55),0.001));
   atom.nucleus.rotation.y+=dt*0.25; atom.nucleus.rotation.x+=dt*0.11;
   const m=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3(), sh=new THREE.Vector3();
+  if(atom.ion) atom.ion.t+=dt;
   atom.shells.forEach((S,k)=>{
     const p=ease((atomT-0.35-k*0.16)/0.7);
     S.g.scale.setScalar(Math.max(p,0.001));
-    S.ringM.opacity=0.32*p; S.eM.opacity=p; S.haloM.opacity=0.18*p;
-    const er=0.1*(0.6+0.4*p); s.set(er,er,er); sh.set(er*2.4,er*2.4,er*2.4);
-    for(let i=0;i<S.cnt;i++){
-      const a=S.phase+i/S.cnt*Math.PI*2+time*S.speed*(reduceMotion?0:1);
-      v.set(Math.cos(a)*S.r,0,Math.sin(a)*S.r);
+    const io=atom.ion&&k===atom.shells.length-1?atom.ion:null;
+    let n=S.cnt, ringFade=1;
+    if(io&&io.q<0) n=S.cnt-io.q;                                       // Elektronen aufnehmen
+    if(io&&io.q>0&&io.q>=S.cnt) ringFade=Math.max(0,1-(io.t-1.4)/0.6); // Schale wird leer
+    S.ringM.opacity=0.32*p*ringFade; S.eM.opacity=p; S.haloM.opacity=0.18*p;
+    S.eI.count=n; S.hI.count=n;
+    const er=0.1*(0.6+0.4*p);
+    for(let i=0;i<n;i++){
+      const a=S.phase+i/n*Math.PI*2+time*S.speed*(reduceMotion?0:1);
+      let rr=S.r, sc=1;
+      if(io&&io.q>0&&i>=S.cnt-io.q){ const f=Math.min(1,io.t/1.6); rr=S.r+f*f*10; sc=Math.max(0,1-f); }   // Elektron fliegt davon
+      if(io&&io.q<0&&i>=S.cnt){ const f=Math.min(1,io.t/1.4); rr=S.r+Math.pow(1-f,3)*10; }                 // Elektron kommt dazu
+      v.set(Math.cos(a)*rr,0,Math.sin(a)*rr); s.setScalar(er*sc); sh.setScalar(er*2.4*sc);
       m.compose(v,q,s); S.eI.setMatrixAt(i,m); m.compose(v,q,sh); S.hI.setMatrixAt(i,m);
     }
     S.eI.instanceMatrix.needsUpdate=true; S.hI.instanceMatrix.needsUpdate=true;
@@ -891,9 +976,10 @@ function showView(v){
   if(v==='decay' && !current.radio) v='bohr';
   aView=v;
   document.querySelectorAll('#a-tabs button').forEach(b=>{ b.setAttribute('aria-pressed',b.dataset.v===v); if(b.dataset.v==='decay') b.hidden=!current.radio; });
-  ac.hidden=v==='decay'; dc.hidden=v!=='decay';
+  ac.hidden=v==='decay'||v==='spec'; dc.hidden=!(v==='decay'||v==='spec'); if(v!=='spec') spec=null;
   const e=current, c=CAT[e.cat].c;
-  if(v==='bohr'){ buildAtom(e); setCap(`<div class="row"><span><b style="background:var(--proton)"></b>Proton</span><span><b style="background:var(--neutron)"></b>Neutron</span><span><b style="background:${c}"></b>Elektron</span><span>ziehen = drehen · zoomen</span></div>`); }
+  if(v==='bohr'){ buildAtom(e); bohrCaption(e); }
+  else if(v==='spec'){ clearStage(); startSpec(e); specCaption(e); }
   else if(v==='orb'){
     if(!orbSel){ const cf=config(e.z); const last=ORDER.filter(s=>cf[s]>0).pop(); orbSel={sub:last,m:0}; }
     const info=buildOrbital(e,orbSel.sub,orbSel.m); orbCaption(e,info);
@@ -933,6 +1019,7 @@ function sizeGL(r,cam,cv){ const w=cv.clientWidth,h=cv.clientHeight; if(!w||!h) 
 new ResizeObserver(()=>sizeGL(aRenderer,aCam,ac)).observe(document.getElementById('a-stage'));
 
 function openAtom(e){
+  if(cmpFirst){ const a=cmpFirst; cmpFirst=null; $('cmp-pick').hidden=true; if(a.z!==e.z){ openCompare(a,e); return; } }
   if(!atomOpen || !current || current.z!==e.z) orbSel=null;
   current=e; selected=e; fillSide(e);
   const wasOpen=atomOpen; atomOpen=true; atomWrap.hidden=false;
@@ -1076,13 +1163,17 @@ function formulaOf(c){
 }
 const molMass=c=>Object.entries(c).reduce((s,[k,v])=>s+v*ELS[k].mass,0);
 const bothMetal=(a,b)=>METAL.has(a)&&METAL.has(b);
+/* Bindungsart: Metall–Metall = Metallbindung, Metall–Nichtmetall = Ionenbindung, sonst kovalent */
+const bondKind=(a,b)=>METAL.has(a)&&METAL.has(b)?'met':(METAL.has(a)||METAL.has(b))?'ion':'cov';
+const dEN=(a,b)=>Math.abs((ELS[a].en||0)-(ELS[b].en||0));
 
 /* Ein Bauversuch: Gerüst aus mehrbindigen Atomen, dann einbindige Atome anhängen,
    übrige Bindungsstellen zu Doppel-/Dreifachbindungen oder Ringen schliessen. */
 function attempt(list,val,rand,att){
   const n=list.length, free=val.slice(), adj=Array.from({length:n},()=>new Map()), key=list.map(()=>rand());
   const grp=i=>val[i]>1?(METAL.has(list[i])?1:0):2;
-  const order=[...list.keys()].sort((i,j)=>(grp(i)-grp(j))||(val[j]-val[i])||(att<4?i-j:key[i]-key[j]));
+  // bei jedem dritten Zufallsversuch die mehrbindigen Atome in beliebiger Reihenfolge (sonst entstehen nie Ether usw.)
+  const order=[...list.keys()].sort((i,j)=>(grp(i)-grp(j))||(att>=4&&att%3===0?0:val[j]-val[i])||(att<4?i-j:key[i]-key[j]));
   const bond=(i,j)=>{ adj[i].set(j,(adj[i].get(j)||0)+1); adj[j].set(i,(adj[j].get(i)||0)+1); free[i]--; free[j]--; };
   const placed=[], loose=[], enPref=att%2===0;
   for(const i of order){
@@ -1090,7 +1181,7 @@ function attempt(list,val,rand,att){
     const cands=placed.filter(p=>free[p]>0 && !bothMetal(list[p],list[i]));
     if(!cands.length){ loose.push(i); continue; }
     const wantsEN=(list[i]==='H'&&enPref)||METAL.has(list[i]);
-    const score=p=>(wantsEN?(ELS[list[p]].en||0)*10:0)+free[p]+(att>=4?rand()*1.5:0);
+    const score=p=>(wantsEN?(ELS[list[p]].en||0)*10:0)+(att>=4&&val[i]>1?rand()*10:free[p]+(att>=4?rand()*1.5:0));
     const p=cands.reduce((a,b)=>score(b)>score(a)?b:a);
     bond(p,i); placed.push(i);
   }
@@ -1210,7 +1301,7 @@ function molLayout(atoms,bonds,seed,init){
 function graphStruct(atoms,bonds,free,loose,seed,givenPos){
   const pos=givenPos||molLayout(atoms,bonds,seed);
   const a=atoms.map((s,i)=>[s,...pos[i]]);
-  const b=bonds.map(([i,j,o])=>[i,j,bothMetal(atoms[i],atoms[j])||METAL.has(atoms[i])||METAL.has(atoms[j])?0:o]);
+  const b=bonds.map(([i,j,o])=>[i,j,o,bondKind(atoms[i],atoms[j])]);
   const stubs=[];
   if(free) free.forEach((f,i)=>{ if(f<=0||(loose&&loose.includes(i))) return;
     const p=new THREE.Vector3(...pos[i]), dir=new THREE.Vector3();
@@ -1228,18 +1319,40 @@ function buildMol(st,opt={}){
   const {a,b}=st, S=1.5; const P=a.map(r=>new THREE.Vector3(r[1],r[2],r[3]).multiplyScalar(S));
   const cen=P.reduce((s,p)=>s.add(p),new THREE.Vector3()).multiplyScalar(1/P.length); P.forEach(p=>p.sub(cen));
   const mats={}, sizes=[];
-  a.forEach((r,i)=>{ const el=r[0]; const [c,rad]=CPK[el]; mats[el]=mats[el]||new THREE.MeshStandardMaterial({color:c,roughness:.35,metalness:.05});
-    const sz=r[4]?(el==='Na'?.55:.85):rad; sizes.push(sz); const s=new THREE.Mesh(ball,mats[el]); s.scale.setScalar(sz); s.position.copy(P[i]); s.userData={atom:i}; molObj.add(s); });
-  molGeom={P,sizes,pick:opt.pick!==false}; polGroup=null;
-  const bm=new THREE.MeshStandardMaterial({color:0xc9d1e0,roughness:.5}), bmThin=new THREE.MeshBasicMaterial({color:0x7a849a});
+  const Q=st.charges||[];
+  a.forEach((r,i)=>{ const el=r[0]; const [c,rad]=CPK[el]; mats[el]=mats[el]||new THREE.MeshStandardMaterial({color:c,roughness:.35,metalness:METAL.has(el)?.35:.05});
+    let sz=r[4]?(el==='Na'?.55:.85):rad; if(Q[i]>0) sz*=.72; else if(Q[i]<0) sz*=1.3;   // Kation klein, Anion gross
+    sizes.push(sz); const s=new THREE.Mesh(ball,mats[el]); s.scale.setScalar(sz); s.position.copy(P[i]); s.userData={atom:i,kind:'atom',sz,q:Q[i]||0}; molObj.add(s); });
+  molGeom={P,sizes,pick:opt.pick!==false,atoms:a.map(r=>r[0])}; polGroup=null;
+  // Ladungen der Ionen immer anzeigen
+  Q.forEach((q,i)=>{ if(!q) return; const sp=textSprite(chargeTxt(q),q>0?'#8cc8ff':'#ff8a8a'); sp.position.copy(P[i]).add(new THREE.Vector3(0,sizes[i]+.38,0)); sp.userData={charge:true}; molObj.add(sp); });
+  const bm=new THREE.MeshStandardMaterial({color:0xc9d1e0,roughness:.5}), bmThin=new THREE.MeshBasicMaterial({color:0x8c96aa,transparent:true,opacity:.55}), bmMet=new THREE.MeshBasicMaterial({color:0x5fd4f4,transparent:true,opacity:.22});
   const up=new THREE.Vector3(0,1,0);
   const rod=(A,B,rad,mat,off=0,perp=null,ud=null)=>{ const dir=B.clone().sub(A),len=dir.length(),mid=A.clone().add(B).multiplyScalar(.5);
     const c=new THREE.Mesh(cyl,mat); c.scale.set(rad,len,rad); c.position.copy(mid); if(perp) c.position.addScaledVector(perp,off);
     c.quaternion.setFromUnitVectors(up,dir.normalize()); if(ud) c.userData=ud; molObj.add(c); };
-  b.forEach(([i,j,o],k)=>{ const A=P[i],B=P[j],dir=B.clone().sub(A);
+  b.forEach(([i,j,o,kd],k)=>{ const A=P[i],B=P[j],dir=B.clone().sub(A);
+    if(!kd) kd=o===0?'ion':'cov';
+    if(kd==='ion'){ rod(A,B,.045,bmThin,0,null,{bond:k,kind:'ion'}); return; }     // Ionen: keine Bindungsstriche, nur Anziehung
+    if(kd==='met'){ rod(A,B,.04,bmMet,0,null,{bond:k,kind:'met'}); return; }
     let perp=dir.clone().cross(new THREE.Vector3(0,0,1)); if(perp.lengthSq()<1e-4) perp=dir.clone().cross(new THREE.Vector3(0,1,0)); perp.normalize();
-    const n=Math.max(1,o), offs=n===1?[0]:n===2?[-.13,.13]:[-.2,0,.2], rad=o===0?.06:n===1?.12:.075;
-    offs.forEach(off=>rod(A,B,rad,o===0?bmThin:bm,off,perp,{bond:k})); });
+    const n=Math.max(1,o), offs=n===1?[0]:n===2?[-.13,.13]:[-.2,0,.2], rad=n===1?.12:.075;
+    offs.forEach(off=>rod(A,B,rad,bm,off,perp,{bond:k})); });
+  // Metallbindung: Elektronengas um die Metallatome
+  const metAtoms=[...new Set(b.filter(x=>x[3]==='met').flatMap(x=>[x[0],x[1]]))];
+  if(metAtoms.length){
+    const N=metAtoms.length*10, pos=new Float32Array(N*3), vel=[], home=[];
+    for(let e=0;e<N;e++){ const h=metAtoms[e%metAtoms.length]; home.push(h); const p=P[h]; pos.set([p.x+(Math.random()-.5)*2,p.y+(Math.random()-.5)*2,p.z+(Math.random()-.5)*2],e*3); vel.push(new THREE.Vector3((Math.random()-.5)*2,(Math.random()-.5)*2,(Math.random()-.5)*2)); }
+    const gg=new THREE.BufferGeometry(); gg.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    const pts=new THREE.Points(gg,new THREE.PointsMaterial({color:0x7fdcff,size:.16,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));
+    molObj.add(pts);
+    molObj.userData.tick=dt=>{ for(let e=0;e<N;e++){ const v=vel[e], p=new THREE.Vector3(pos[e*3],pos[e*3+1],pos[e*3+2]);
+        // zum nächsten Metallatom hingezogen, springen aber frei zwischen den Atomen
+        let best=P[metAtoms[0]], bd=1e9; metAtoms.forEach(m=>{ const d=p.distanceToSquared(P[m]); if(d<bd){ bd=d; best=P[m]; } });
+        v.addScaledVector(best.clone().sub(p),dt*2.2).add(new THREE.Vector3((Math.random()-.5),(Math.random()-.5),(Math.random()-.5)).multiplyScalar(dt*9)).clampLength(0,3.2);
+        p.addScaledVector(v,dt); pos[e*3]=p.x; pos[e*3+1]=p.y; pos[e*3+2]=p.z; }
+      gg.attributes.position.needsUpdate=true; };
+  }
   const ext=P.slice();
   if(st.stubs&&st.stubs.length){
     const sm=new THREE.MeshBasicMaterial({color:0xffd23f,transparent:true,opacity:.9}), sl=new THREE.MeshBasicMaterial({color:0xffd23f,transparent:true,opacity:.45});
@@ -1271,8 +1384,10 @@ function setPanel({name,f,desc,facts,els,stubs}){
     +(stubs?'<span><b style="background:#ffd23f"></b>freie Bindung</span>':'')+((els||[]).length?'<span>ziehen = drehen</span>':'');
 }
 function bondFacts(atoms,bonds){
-  let s=0,d=0,t=0,ion=0; bonds.forEach(([i,j,o])=>{ if(METAL.has(atoms[i])||METAL.has(atoms[j])) ion++; else if(o===1) s++; else if(o===2) d++; else t++; });
-  return [s&&s+' einfach',d&&d+' doppelt',t&&t+' dreifach',ion&&ion+' ionisch'].filter(Boolean).join(', ')||'–';
+  let up=0,po=0,d=0,t=0,ion=0,met=0;
+  bonds.forEach(([i,j,o])=>{ const k=bondKind(atoms[i],atoms[j]); if(k==='ion') ion++; else if(k==='met') met++; else { if(dEN(atoms[i],atoms[j])<0.4) up++; else po++; if(o===2) d++; if(o===3) t++; } });
+  const multi=[d&&d+' doppelt',t&&t+' dreifach'].filter(Boolean).join(', ');
+  return [up&&up+' unpolar kovalent',po&&po+' polar kovalent',ion&&ion+' ionisch',met&&met+' metallisch'].filter(Boolean).join(', ')+(multi?` (davon ${multi})`:'')||'–';
 }
 const fmtMolMass=c=>molMass(c).toLocaleString('de-CH',{maximumFractionDigits:2})+' g/mol';
 function knownPanel(m){
@@ -1295,7 +1410,7 @@ const BYKEY={}; MOLS.forEach(m=>{ const k=countsKey(m.counts); if(BYKEY[k]) cons
 /* Struktur-Fingerabdruck: gleiche Verknüpfung = gleicher Schlüssel (so werden Isomere unterschieden) */
 function wlKey(atoms,bonds){
   const n=atoms.length, nb=Array.from({length:n},()=>[]);
-  bonds.forEach(([i,j,o])=>{ const t=METAL.has(atoms[i])||METAL.has(atoms[j])?'i':Math.max(1,o); nb[i].push([j,t]); nb[j].push([i,t]); });
+  bonds.forEach(([i,j,o])=>{ const k=bondKind(atoms[i],atoms[j]), t=k==='met'?'m':k==='ion'?'i'+Math.max(1,o):Math.max(1,o); nb[i].push([j,t]); nb[j].push([i,t]); });
   let L=atoms.slice();
   for(let r=0;r<Math.min(n,8);r++) L=L.map((l,i)=>hashStr(l+'('+nb[i].map(([j,t])=>t+L[j]).sort().join(',')+')').toString(36));
   return L.sort().join('.');
@@ -1314,11 +1429,23 @@ function matchKnown(atoms,bonds,counts){
 }
 
 /* Bindigkeit */
-const usedOf=i=>ed.bonds.reduce((s,[a,b,o])=>s+(a===i||b===i?o:0),0);
+const kindOf=([a,b])=>bondKind(ed.atoms[a],ed.atoms[b]);
+const usedOf=i=>ed.bonds.reduce((s,bd)=>s+((bd[0]===i||bd[1]===i)&&kindOf(bd)!=='met'?bd[2]:0),0);   // Metallbindung verbraucht keine Wertigkeit
+const hasKind=(i,k)=>ed.bonds.some(bd=>(bd[0]===i||bd[1]===i)&&kindOf(bd)===k);
 const maxVal=s=>Math.max(...VAL[s]);
 const valOf=i=>{ const u=usedOf(i), o=VAL[ed.atoms[i]]; return o.find(v=>v>=u)??o[o.length-1]; };
-const freeOf=i=>valOf(i)-usedOf(i);
-const canBond=(i,el)=>usedOf(i)<maxVal(ed.atoms[i])&&!bothMetal(ed.atoms[i],el);
+const freeOf=i=>METAL.has(ed.atoms[i])&&hasKind(i,'met')&&!hasKind(i,'ion')?0:valOf(i)-usedOf(i);
+const degOf=i=>ed.bonds.filter(bd=>bd[0]===i||bd[1]===i).length;
+const canBond=(i,el)=>bondKind(ed.atoms[i],el)==='met'?degOf(i)<12:usedOf(i)<maxVal(ed.atoms[i]);
+const KIND_NAME={cov:'kovalent',ion:'Ionenbindung',met:'Metallbindung'};
+function bondInfoText(k){
+  const [i,j,o]=ed.bonds[k], A=ed.atoms[i], B=ed.atoms[j], kd=bondKind(A,B);
+  if(kd==='met') return `${A}–${B}: Metallbindung – die Aussenelektronen gehören allen Metallatomen gemeinsam (Elektronengas). Darum leiten Metalle Strom.`;
+  if(kd==='ion'){ const m=METAL.has(A)?A:B, nm=m===A?B:A;
+    return `${m}–${nm}: Ionenbindung – ${ELS[m].name} gibt ${o} Elektron${o>1?'en':''} an ${ELS[nm].name} ab. Kein gemeinsames Elektronenpaar, sondern Anziehung von + und −. Antippen = mehr Elektronen übergeben.`; }
+  const d=dEN(A,B);
+  return `${A}${['','–','=','≡'][o]}${B}: ${['','Einfach','Doppel','Dreifach'][o]}bindung, ${d<0.4?'unpolar':'polar'} kovalent (ΔEN = ${d.toFixed(2).replace('.',',')}) – gemeinsame Elektronenpaare.`;
+}
 const atomName=i=>ELS[ed.atoms[i]].name;
 function components(){ const n=ed.atoms.length, p=[...Array(n).keys()], f=x=>p[x]===x?x:(p[x]=f(p[x])); let c=n;
   ed.bonds.forEach(([i,j])=>{ const a=f(i),b=f(j); if(a!==b){ p[a]=b; c--; } }); return c; }
@@ -1347,7 +1474,7 @@ function addAtom(el){
   let p=null;
   if(n){
     if(edSel!=null){
-      if(!canBond(edSel,el)){ warn(bothMetal(ed.atoms[edSel],el)?'Zwei Metalle verbinden sich nicht zu einem Molekül.':`${atomName(edSel)} hat keine freie Bindung mehr. Tippe ein anderes Atom an – oder eine Bindung, um sie zu ändern.`); return; }
+      if(!canBond(edSel,el)){ warn(`${atomName(edSel)} hat keine freie Bindung mehr. Tippe ein anderes Atom an – oder eine Bindung, um sie zu ändern.`); return; }
       p=edSel;
     } else { p=autoTarget(el); if(p==null){ warn('Nirgends ist mehr Platz frei. Entferne ein Atom oder mach aus einer Doppel- eine Einfachbindung.'); return; } }
   }
@@ -1360,13 +1487,15 @@ function removeAtom(i){
   ed.atoms.splice(i,1); edPos.splice(i,1); edSel=null; connectMode=false; refreshLab();
 }
 function cycleBond(k){
-  const [i,j,o]=ed.bonds[k], room=usedOf(i)<maxVal(ed.atoms[i])&&usedOf(j)<maxVal(ed.atoms[j]), no=o<3&&room?o+1:1;
-  if(no===o){ warn(ed.atoms[i]==='H'||ed.atoms[j]==='H'?'Wasserstoff kann nur eine Einfachbindung eingehen.':'Diese Bindung lässt sich nicht verstärken – ein Atom hat keine freie Bindung mehr.'); return; }
-  snap(); ed.bonds[k][2]=no; refreshLab();
+  const [i,j,o]=ed.bonds[k], kd=kindOf(ed.bonds[k]);
+  if(kd==='met'){ edSel=null; refreshSel(); $('kit-sel').textContent='ℹ '+bondInfoText(k); return; }
+  const room=usedOf(i)<maxVal(ed.atoms[i])&&usedOf(j)<maxVal(ed.atoms[j]), no=o<3&&room?o+1:1;
+  if(no===o){ warn(ed.atoms[i]==='H'||ed.atoms[j]==='H'?(kd==='ion'?'Wasserstoff nimmt nur ein Elektron auf.':'Wasserstoff kann nur eine Einfachbindung eingehen.'):kd==='ion'?'Mehr Elektronen kann hier keines der beiden Atome abgeben oder aufnehmen.':'Diese Bindung lässt sich nicht verstärken – ein Atom hat keine freie Bindung mehr.'); $('kit-sel').textContent='ℹ '+bondInfoText(k); return; }
+  snap(); ed.bonds[k][2]=no; edSel=null; refreshLab(); $('kit-sel').textContent='ℹ '+bondInfoText(k);
 }
 function connectAtoms(i,j){
-  if(ed.bonds.some(([a,b])=>(a===i&&b===j)||(a===j&&b===i))){ warn('Die beiden sind schon verbunden. Tippe auf die Bindung, um sie zur Doppelbindung zu machen.'); return; }
-  if(!canBond(i,ed.atoms[j])||!canBond(j,ed.atoms[i])){ warn(bothMetal(ed.atoms[i],ed.atoms[j])?'Zwei Metalle verbinden sich nicht zu einem Molekül.':'Eines der beiden Atome hat keine freie Bindung mehr.'); return; }
+  if(ed.bonds.some(([a,b])=>(a===i&&b===j)||(a===j&&b===i))){ warn('Die beiden sind schon verbunden. Tippe auf die Bindung, um sie zu ändern.'); return; }
+  if(!canBond(i,ed.atoms[j])||!canBond(j,ed.atoms[i])){ warn('Eines der beiden Atome hat keine freie Bindung mehr.'); return; }
   snap(); ed.bonds.push([i,j,1]); connectMode=false; edSel=null; refreshLab();
 }
 function fillH(){
@@ -1400,7 +1529,7 @@ mc.addEventListener('pointerup',e=>{
   if(!mDown) return; const moved=Math.hypot(e.clientX-mDown.x,e.clientY-mDown.y); mDown=null;
   if(moved>6||labMode!=='build'||!molObj||!molGeom||!molGeom.pick) return;
   const r=mc.getBoundingClientRect(); mRay.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),mCam);
-  const hit=mRay.intersectObjects(molObj.children,false).find(h=>h.object.userData.atom!=null||h.object.userData.bond!=null);
+  const hit=mRay.intersectObjects(molObj.children,false).find(h=>h.object.visible&&!h.object.isSprite&&(h.object.userData.atom!=null||h.object.userData.bond!=null));
   if(!hit){ if(edSel!=null){ edSel=null; connectMode=false; refreshSel(); } return; }
   const u=hit.object.userData;
   if(u.atom!=null){ if(connectMode&&edSel!=null&&u.atom!==edSel) connectAtoms(edSel,u.atom); else { edSel=edSel===u.atom?null:u.atom; connectMode=false; refreshSel(); } }
@@ -1441,13 +1570,21 @@ function refreshLab(){
   edPos=molLayout(ed.atoms,ed.bonds,seed,edPos.length===n?edPos:null);
   const lattice=!!(known&&known.id==='nacl');
   const st=lattice?known.build():graphStruct(ed.atoms,ed.bonds,free,null,seed,edPos);
+  st.charges=lattice?st.a.map(r=>r[0]==='Na'?1:-1):lewisInfo(ed,free).map((f,i)=>hasKind(i,'ion')?f.charge:0);
   buildMol(st,{keepCam:edCamKept&&!lattice,pick:!lattice}); edCamKept=!lattice;
+  const allMetal=ed.atoms.every(a=>METAL.has(a));
   lab={atoms:lattice?st.a.map(r=>r[0]):ed.atoms.slice(),bonds:lattice?st.b:ed.bonds.map(b=>b.slice()),free:lattice?null:free,valid,known,key,lattice};
   const els=KIT.filter(k=>tray[k]);
   if(known){
     const isNew=!found.has(known.id); found.add(known.id); saveFound(); molCur=known; setPanel(knownPanel(known));
     msg.className=isNew?'msg new':'msg ok';
     msg.textContent=(isNew?`🎉 Neu entdeckt: ${known.name}! (${found.size} von ${MOLS.length})`:`Passt! Das ist ${known.name}.`)+(lattice?' Im Kristall wechseln sich Na⁺ und Cl⁻ ab – mit «Zurück» geht’s weiter.':'');
+  } else if(valid&&allMetal){
+    molCur=null; msg.className='msg ok'; const kinds=KIT.filter(k=>tray[k]);
+    msg.textContent=kinds.length>1?'Eine Legierung – Metalle gemischt, zusammengehalten von der Metallbindung.':'Ein Stück Metall – zusammengehalten von der Metallbindung.';
+    setPanel({name:kinds.length>1?'Legierung':ELS[kinds[0]].name+' (Metall)',f:formulaOf(tray),els:kinds,
+      desc:`<div class="label">Metallbindung</div>Metallatome geben ihre Aussenelektronen in einen gemeinsamen «See» ab (die blauen Punkte). Die positiven Atomrümpfe halten in diesem Elektronengas zusammen. Weil die Elektronen frei wandern, leiten Metalle Strom und Wärme und lassen sich verformen, ohne zu zerbrechen.`,
+      facts:[['Bindungen',bondFacts(ed.atoms,ed.bonds)],['Atome',countList(tray)]]});
   } else if(valid){
     molCur=null; msg.className='msg ok';
     msg.textContent=isomerOf?`Chemisch möglich – ein Isomer von ${isomerOf.name}: gleiche Atome, aber anders verknüpft!`:'Chemisch möglich! Alle Bindungen sind besetzt.';
@@ -1458,17 +1595,27 @@ function refreshLab(){
   } else {
     molCur=null; msg.className='msg warn';
     const parts=[];
-    if(n===1){ const v=VAL[ed.atoms[0]][0]; parts.push(`${atomName(0)} allein ist noch kein Molekül – es will ${v} Bindung${v>1?'en':''} eingehen.`); }
+    if(n===1){ const v=VAL[ed.atoms[0]][0];
+      parts.push(METAL.has(ed.atoms[0])?`${atomName(0)} ist ein Metall: Es gibt ${v} Elektron${v>1?'en':''} an ein Nichtmetall ab (Ionenbindung) – oder verbindet sich mit weiteren Metallatomen (Metallbindung).`
+        :`${atomName(0)} allein ist noch kein Molekül – es will ${v} Bindung${v>1?'en':''} eingehen.`); }
     else if(open) parts.push(`Noch ${open} freie Bindung${open>1?'en':''} (gelbe Punkte). Wähle ein Atom und docke etwas an – oder «H auffüllen».`);
     if(comps>1) parts.push('Nicht alle Teile hängen zusammen: Atom wählen, «Verbinden» und das andere Atom antippen.');
     msg.textContent=parts.join(' ');
     setPanel({name:'Im Bau …',f:formulaOf(tray),els,stubs:open>0,facts:[['Atome',countList(tray)],['Freie Bindungen',open]]});
   }
-  renderList(); afterBuild(); refreshSel(); chalCheck();
+  // Isomere und Statistik für die Abzeichen
+  if(valid&&!lattice&&!ed.atoms.some(a=>METAL.has(a))&&recordIsomer(tray,key)){ msg.textContent+=' 🔀 Neue Anordnung dieser Atome entdeckt!'; }
+  if(valid){ let ch=false;
+    if(!stats.ring&&!allMetal&&ringCount({atoms:ed.atoms,bonds:ed.bonds})>0){ stats.ring=1; ch=true; }
+    if(!stats.triple&&ed.bonds.some(b=>b[2]===3&&kindOf(b)==='cov')){ stats.triple=1; ch=true; }
+    if(!stats.metal&&allMetal){ stats.metal=1; ch=true; }
+    if(ch) saveStats(); }
+  $('kit-iso').disabled=n<2;
+  renderList(); afterBuild(); refreshSel(); chalCheck(); checkBadges();
 }
 function renderList(){
   const list=MOLS.filter(m=>found.has(m.id));
-  $('found-label').textContent=`Entdeckt · ${list.length} von ${MOLS.length}`;
+  $('found-label').textContent=`Entdeckt · ${list.length} von ${MOLS.length}`+(isoCount()?` · 🔀 ${isoCount()} Isomer${isoCount()>1?'e':''}`:'');
   $('mol-list').innerHTML=list.length?list.map(m=>`<button data-id="${m.id}" aria-pressed="${molCur===m}">${m.f} · ${m.name}</button>`).join('')
     :'<div class="empty">Noch nichts entdeckt. Bau dein erstes Molekül – zum Beispiel aus 2 H und 1 O.</div>';
   $('mol-list').querySelectorAll('button').forEach(b=>b.onclick=()=>loadMol(b.dataset.id));
@@ -1481,9 +1628,9 @@ function loadMol(id){
 function openMol(id){
   molOpen=true; molWrap.hidden=false; sizeGL(mRenderer,mCam,mc);
   if(id&&found.has(id)){ setLabMode('build',true); loadMol(id); } else setLabMode(labMode);
-  $('m-close').focus({preventScroll:true});
+  checkBadges(); $('m-close').focus({preventScroll:true});
 }
-function closeMol(){ molOpen=false; molWrap.hidden=true; if(chal) chalStop(); stopReaction(); clearMol(); canvas.focus({preventScroll:true}); }
+function closeMol(){ molOpen=false; molWrap.hidden=true; if(chal) chalStop(); stopReaction(); stopHB(); clearMol(); canvas.focus({preventScroll:true}); }
 $('open-mol').onclick=()=>openMol();
 $('m-close').onclick=closeMol;
 molWrap.addEventListener('pointerdown',ev=>{ if(ev.target===molWrap) closeMol(); });
@@ -1495,12 +1642,13 @@ const lcv=$('lc'), lctx=lcv.getContext('2d');
 let mView='3d';
 const latticeGraph={atoms:['Na','Cl'],bonds:[[0,1,1]]};
 const labGraph=()=>lab&&lab.lattice?latticeGraph:lab;
-const isIonic=(g,i,j)=>METAL.has(g.atoms[i])||METAL.has(g.atoms[j]);
+const isIonic=(g,i,j)=>bondKind(g.atoms[i],g.atoms[j])==='ion';
+const isMetallic=(g,i,j)=>bondKind(g.atoms[i],g.atoms[j])==='met';
 
 /* Elektronen für die Lewis-Formel: freie Elektronenpaare, ungepaarte Elektronen, Formalladung */
 function lewisInfo(g,free){
   const n=g.atoms.length, cov=new Array(n).fill(0), ion=new Array(n).fill(0);
-  g.bonds.forEach(([i,j,o])=>{ const t=isIonic(g,i,j)?ion:cov; t[i]+=Math.max(1,o); t[j]+=Math.max(1,o); });
+  g.bonds.forEach(([i,j,o])=>{ if(isMetallic(g,i,j)) return; const t=isIonic(g,i,j)?ion:cov; t[i]+=Math.max(1,o); t[j]+=Math.max(1,o); });
   return g.atoms.map((s,i)=>{
     const f=free?Math.max(0,free[i]||0):0;
     if(METAL.has(s)) return {pairs:0,rad:f,charge:ion[i]};          // Metall gibt Elektronen ab
@@ -1612,7 +1760,7 @@ function drawLewis(){
   const pt=p=>[W/2+(p[0]-cx)*s,(top+bottom)/2-(p[1]-cy)*s], Q=L.P.map(pt), r=Math.min(19,s*.26);
   x.lineCap='round';
   g.bonds.forEach(([i,j,o])=>{ const [x1,y1]=Q[i],[x2,y2]=Q[j], dx=x2-x1, dy=y2-y1, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len;
-    if(isIonic(g,i,j)){ x.setLineDash([3,5]); x.strokeStyle='#5a6478'; x.lineWidth=1.5; x.beginPath(); x.moveTo(x1+ux*r,y1+uy*r); x.lineTo(x2-ux*r,y2-uy*r); x.stroke(); x.setLineDash([]); return; }
+    if(isIonic(g,i,j)||isMetallic(g,i,j)){ x.setLineDash(isIonic(g,i,j)?[3,5]:[1,4]); x.strokeStyle=isIonic(g,i,j)?'#5a6478':'#3f8fae'; x.lineWidth=1.5; x.beginPath(); x.moveTo(x1+ux*r,y1+uy*r); x.lineTo(x2-ux*r,y2-uy*r); x.stroke(); x.setLineDash([]); return; }
     const offs=o===1?[0]:o===2?[-3.5,3.5]:[-6,0,6]; x.strokeStyle='#c9d1e0'; x.lineWidth=2.2;
     offs.forEach(off=>{ x.beginPath(); x.moveTo(x1+ux*r-uy*off,y1+uy*r+ux*off); x.lineTo(x2-ux*r-uy*off,y2-uy*r+ux*off); x.stroke(); }); });
   const fs=Math.round(Math.min(30,Math.max(15,s*.3)));
@@ -1627,7 +1775,8 @@ new ResizeObserver(()=>{ if(molOpen&&mView==='lewis'&&labMode==='build') drawLew
 
 /* Polarität: Teilladungen aus der Elektronegativität, Dipol aus der Form */
 function polarityInfo(g,P){
-  if(g.atoms.some(s=>METAL.has(s))) return {type:'ion'};
+  if(g.atoms.every(s=>METAL.has(s))) return {type:'met'};
+  if(g.bonds.some(([i,j])=>isIonic(g,i,j))) return {type:'ion'};
   const n=g.atoms.length, d=new Array(n).fill(0); let polar=0, blen=0;
   g.bonds.forEach(([i,j])=>{ const dd=(ELS[g.atoms[j]].en||0)-(ELS[g.atoms[i]].en||0); if(Math.abs(dd)>=0.4){ d[i]+=dd; d[j]-=dd; polar++; if(P) blen+=P[i].distanceTo(P[j]); } });
   if(!polar) return {type:'none',d};
@@ -1644,6 +1793,7 @@ function textSprite(txt,color){
 }
 const POL_TXT={
   ion:'<b>Ionenverbindung</b>: Das Metall gibt Elektronen ab (+), das Nichtmetall nimmt sie auf (−). Statt Teilladungen gibt es ganze Ladungen.',
+  met:'<b>Metallbindung</b>: Positive Metall-Ionen in einem «See» aus frei beweglichen Elektronen. Keine Teilladungen – aber darum leiten Metalle Strom und Wärme.',
   none:'<b>Unpolar</b>: Alle Atome ziehen etwa gleich stark an den Bindungselektronen (Unterschied der Elektronegativität unter 0,4).',
   sym:'<b>Unpolar – trotz polarer Bindungen</b>: Die Form ist symmetrisch, darum heben sich die Teilladungen auf. Genau wie bei CO₂.',
   polar:'<b>Polar</b>: Die Teilladungen heben sich nicht auf. Der Pfeil zeigt zur negativen Seite (δ−). Genau wie bei Wasser – darum löst Wasser Salz.'
@@ -1674,6 +1824,9 @@ function afterBuild(){
   lcv.hidden=!lewis; mc.hidden=lewis; $('m-info').hidden=true;
   if(polGroup){ disposeGroup(polGroup); polGroup=null; }
   if(labMode!=='build') return;
+  applyKalotte(mView==='kal');
+  if(molObj) molObj.children.forEach(c=>{ if(c.userData&&c.userData.charge) c.visible=mView!=='pol'; });
+  if(mView==='kal'&&lab){ $('m-info').innerHTML='<b>Kalottenmodell</b>: Jede Kugel hat die echte Grösse ihres Atoms (Van-der-Waals-Radius, bei Ionen der Ionenradius). Die Atome überlappen sich dort, wo sie gebunden sind – so «voll» ist ein Molekül wirklich.'; $('m-info').hidden=false; }
   if(lewis){ drawLewis(); if(lab){ $('m-info').innerHTML='<b>Lewis-Formel</b>: Ein Strich zwischen zwei Atomen ist ein gemeinsames Elektronenpaar (Bindung), ein Strich am Atom ein freies Elektronenpaar. Kleine + und − sind Ladungen.'; $('m-info').hidden=false; } }
   else if(mView==='pol'&&molObj) buildPolarity();
 }
@@ -1697,12 +1850,13 @@ const RXS=[
   {id:'kalk',name:'Kalk brennen',l:[['caco3',1]],r:[['cao',1],['co2',1]],exo:false,desc:'Bei über 900 °C entweicht aus Kalkstein CO₂ – übrig bleibt Branntkalk für Mörtel und Zement.'},
   {id:'foto',name:'Fotosynthese',l:[['co2',6],['h2o',6]],r:[['glucose',1],['o2',6]],exo:false,desc:'Pflanzen bauen mit Sonnenlicht aus CO₂ und Wasser Traubenzucker – und geben dabei Sauerstoff ab.'}
 ];
-let rxState=null, rxCur=null, labMode='build';
+let rxState=null, rxCur=null, labMode='build', hbState=null;
 const spCache={};
 function speciesOf(id){
   if(spCache[id]) return spCache[id];
   let sp;
   if(id==='nacl1') sp={f:'NaCl',st:{a:[['Na',-1.4,0,0],['Cl',1.4,0,0]],b:[[0,1,1]]}};
+  else if(id.startsWith('g:')){ const g=decGraph(id.slice(2)); sp={f:formulaOf(countsOf(g.atoms)),st:graphStruct(g.atoms,g.bonds,null,null,hashStr(id))}; }
   else { const m=MOLS.find(x=>x.id===id); sp=m?{f:m.f,st:structOf(m)}:{f:id,st:{a:[[id,0,0,0]],b:[]}}; }
   return spCache[id]=sp;
 }
@@ -1736,7 +1890,7 @@ function startReaction(r){
     const m=new THREE.Mesh(cyl,new THREE.MeshStandardMaterial({color:ion?0x7a849a:0xc9d1e0,roughness:.5,transparent:true,opacity:op}));
     m.userData={i,j,r:ion||o===0?.04:o===1?.1:o===2?.16:.2}; g.add(m); return m; };
   const bondsA=A.bonds.map(([i,j,o])=>bondMesh(i,j,o,1)), bondsB=B.bonds.map(([i,j,o])=>bondMesh(inv[i],inv[j],o,0));
-  const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:getGlowTex(),color:r.exo?0xffa040:0x5fd4f4,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+  const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:getGlowTex(),color:r.exo===null?0xe8ecf3:r.exo?0xffa040:0x5fd4f4,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
   glow.scale.setScalar(.1); g.add(glow);
   mScene.add(g); rxState={g,atoms,bondsA,bondsB,glow,t:0,exo:r.exo,ext:Math.max(A.ext,B.ext)};
   const R=rxState.ext+.6, d=R/Math.tan(THREE.MathUtils.degToRad(mCam.fov/2))*(mCam.aspect<1?1/mCam.aspect:1)*.85;
@@ -1755,7 +1909,7 @@ function rxTick(dt){
   const upd=(m,op)=>{ m.visible=op>.01; m.material.opacity=op; if(!m.visible) return; const A=s.atoms[m.userData.i].m.position, B=s.atoms[m.userData.j].m.position;
     TMP.subVectors(B,A); const len=TMP.length(); m.scale.set(m.userData.r,len,m.userData.r); m.position.addVectors(A,B).multiplyScalar(.5); m.quaternion.setFromUnitVectors(UPV,TMP.normalize()); };
   s.bondsA.forEach(m=>upd(m,fa)); s.bondsB.forEach(m=>upd(m,fb));
-  const peak=s.exo?Math.exp(-Math.pow((t-1.7)/.45,2)):Math.exp(-Math.pow((t-1.0)/.5,2));
+  const peak=s.exo!==false?Math.exp(-Math.pow((t-1.7)/.45,2))*(s.exo===null?.5:1):Math.exp(-Math.pow((t-1.0)/.5,2));
   s.glow.material.opacity=peak*.85; s.glow.scale.setScalar(.1+peak*s.ext*2.6);
 }
 function renderRxList(){
@@ -1766,7 +1920,8 @@ function showReaction(r){
   startReaction(r);
   const n=rxState.atoms.length, els=[...new Set(rxState.atoms.map(a=>a.el))];
   $('m-name').textContent=r.name; $('m-formula').textContent=rxSide(r.l)+'  →  '+rxSide(r.r);
-  $('rx-desc').innerHTML=`<div class="label">Was passiert?</div>${r.desc}<p class="note" style="margin-top:8px">${r.exo?'🔥 <b>Exotherm</b>: Dabei wird Energie frei (Wärme, Licht).':'⚡ <b>Endotherm</b>: Die Reaktion braucht Energie (Hitze oder Sonnenlicht).'} Links und rechts sind es je ${n} Atome – es geht nichts verloren, die Atome ordnen sich nur neu.</p>`;
+  $('rx-desc').innerHTML=`<div class="label">Was passiert?</div>${r.desc}<p class="note" style="margin-top:8px">${r.exo===null?'':r.exo?'🔥 <b>Exotherm</b>: Dabei wird Energie frei (Wärme, Licht).':'⚡ <b>Endotherm</b>: Die Reaktion braucht Energie (Hitze oder Sonnenlicht).'} Links und rechts sind es je ${n} Atome – es geht nichts verloren, die Atome ordnen sich nur neu.</p>`;
+  if(r.id!=='eigen'&&!stats.rx.includes(r.id)){ stats.rx.push(r.id); saveStats(); checkBadges(); }
   $('m-cap').innerHTML=KIT.filter(k=>els.includes(k)).map(k=>`<span><b style="background:${CPK[k][0]}"></b>${ELS[k].name}</span>`).join('')+'<span>ziehen = drehen</span>';
   renderRxList();
 }
@@ -1774,8 +1929,12 @@ $('rx-play').onclick=()=>{ if(rxCur) showReaction(rxCur); };
 function setLabMode(m,silent){
   labMode=m;
   document.querySelectorAll('#m-modes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));
-  $('sec-build').hidden=m!=='build'; $('sec-react').hidden=m!=='react'; $('m-views').hidden=m!=='build';
-  if(m==='react'){ if(chal) chalStop(); lcv.hidden=true; mc.hidden=false; $('m-info').hidden=true; clearMol(); showReaction(rxCur||RXS[0]); }
+  $('sec-build').hidden=m!=='build'; $('sec-react').hidden=m!=='react'; $('sec-hb').hidden=m!=='hb'; $('m-views').hidden=m!=='build';
+  if(m!=='build'){ if(chal) chalStop(); lcv.hidden=true; mc.hidden=false; $('m-info').hidden=true; clearMol(); }
+  if(m!=='hb') stopHB();
+  if(m==='react'){ showReaction(rxCur||RXS[0]); renderRxB(); }
+  else if(m==='hb'){ stopReaction(); buildHB(); $('m-name').textContent='Wasserstoffbrücken'; $('m-formula').textContent='12 × H₂O';
+    $('m-cap').innerHTML='<span><b style="background:#ff4a3d"></b>Sauerstoff δ−</span><span><b style="background:#f4f6fa"></b>Wasserstoff δ+</span><span><b style="background:#ffd23f"></b>Wasserstoffbrücke</span><span>ziehen = drehen</span>'; }
   else { stopReaction(); if(!silent) refreshLab(); }
 }
 document.querySelectorAll('#m-modes button').forEach(b=>b.onclick=()=>setLabMode(b.dataset.m));
@@ -1805,7 +1964,9 @@ const TASKS=[
   {t:'Baue ein Molekül mit einem Ring.',ok:s=>s.valid&&ringCount(s)>0,pts:130},
   {t:'Baue ein fertiges Molekül aus genau 5 Atomen.',ok:s=>s.valid&&s.n===5,pts:60},
   {t:'Baue ein Molekül mit mindestens 12 Atomen.',ok:s=>s.valid&&s.n>=12,pts:90},
-  {t:'Baue eine Ionenverbindung (Metall + Nichtmetall).',ok:s=>s.valid&&s.atoms.some(a=>METAL.has(a)),pts:80},
+  {t:'Baue eine Ionenverbindung (Metall + Nichtmetall).',ok:s=>s.valid&&s.bonds.some(([i,j])=>bondKind(s.atoms[i],s.atoms[j])==='ion'),pts:80},
+  {t:'Baue ein Stück Metall mit Metallbindung aus mindestens 4 Atomen.',ok:s=>s.valid&&s.atoms.length>=4&&s.atoms.every(a=>METAL.has(a)),pts:90},
+  {t:'Baue eine Verbindung mit kovalenten UND ionischen Bindungen.',ok:s=>s.valid&&s.bonds.some(([i,j])=>bondKind(s.atoms[i],s.atoms[j])==='ion')&&s.bonds.some(([i,j])=>bondKind(s.atoms[i],s.atoms[j])==='cov'),pts:140},
   {t:'Baue ein polares Molekül aus genau 3 Atomen.',ok:s=>s.valid&&s.n===3&&s.pol==='polar',pts:110},
   {t:'Baue ein unpolares Molekül, das trotzdem polare Bindungen hat.',ok:s=>s.valid&&s.pol==='sym',pts:150},
   {t:'Baue einen Kohlenwasserstoff (nur C und H) mit 3 C-Atomen.',ok:s=>s.valid&&s.counts.C===3&&Object.keys(s.counts).every(k=>k==='C'||k==='H'),pts:100},
@@ -1865,7 +2026,7 @@ function chalFinish(){
   $('ch-step').textContent=rec?'🥇 Neuer Rekord!':`Rekord: ${best} Punkte`; $('ch-prog').textContent=''; $('ch-time').style.width='0%';
   $('ch-btns').innerHTML='<button id="ch-again">Nochmal</button><button id="ch-close">Schliessen</button>';
   $('ch-again').onclick=chalStart; $('ch-close').onclick=chalStop;
-  chal.locked=true;
+  chal.locked=true; checkBadges();
 }
 function chalStop(){ clearInterval(chalTimer); chalTimer=null; chal=null; $('chal').hidden=true; }
 $('ch-start').onclick=chalStart;
@@ -1902,6 +2063,396 @@ function openFromHash(){
   const msg=$('kit-msg'); msg.className='msg ok'; msg.textContent='📬 Dieses Molekül hat dir jemand geschickt. '+msg.textContent;
 }
 addEventListener('hashchange',openFromHash);
+
+/* =====================================================================
+   Isomere: gleiche Atome, andere Anordnung
+   ===================================================================== */
+const ISO_KEY='periodensystem3d-isomere';
+let isoFound={}; try{ isoFound=JSON.parse(localStorage.getItem(ISO_KEY)||'{}')||{}; }catch(_){}
+const isoCount=()=>Object.values(isoFound).reduce((s,l)=>s+Math.max(0,l.length-1),0);
+function recordIsomer(counts,key){                // true = neue Anordnung einer schon bekannten Formel
+  const f=countsKey(counts), l=isoFound[f]||(isoFound[f]=[]); if(l.includes(key)) return false;
+  l.push(key); try{ localStorage.setItem(ISO_KEY,JSON.stringify(isoFound)); }catch(_){} return l.length>1;
+}
+const isoCache={};
+function enumerateIsomers(counts){
+  const ck=countsKey(counts); if(isoCache[ck]) return isoCache[ck];
+  const list=[]; KIT.forEach(s=>{ for(let k=0;k<(counts[s]||0);k++) list.push(s); });
+  const rand=rng(hashStr(ck)+99), seen=new Map();
+  for(let att=0;att<500&&seen.size<12;att++){
+    const val=list.map(s=>{ const o=VAL[s]; return att<4?o[0]:o[Math.floor(rand()*o.length)]; });
+    const r=attempt(list,val,rand,att); if(r.bad) continue;
+    const k=wlKey(r.list,r.bonds); if(!seen.has(k)) seen.set(k,{key:k,atoms:r.list.slice(),bonds:r.bonds.map(b=>b.slice()),score:r.score});
+  }
+  // bekannte Moleküle zuerst, dann die einfachsten
+  return isoCache[ck]=[...seen.values()].sort((a,b)=>((MOLS.some(m=>m.wl===b.key))-(MOLS.some(m=>m.wl===a.key)))||a.score-b.score);
+}
+$('kit-iso').onclick=()=>{
+  if(ed.atoms.length<2) return;
+  if(ed.atoms.some(a=>METAL.has(a))){ warn('Bei Ionenverbindungen und Metallen gibt es keine Isomere im engeren Sinn – es zählt nur, wer Elektronen abgibt.'); return; }
+  const list=enumerateIsomers(tray);
+  if(!list.length){ warn('Mit genau diesen Atomen lässt sich kein fertiges Molekül bauen – füge Atome hinzu oder nimm welche weg.'); return; }
+  const cur=wlKey(ed.atoms,ed.bonds), idx=list.findIndex(x=>x.key===cur);
+  if(list.length===1&&idx===0){ warn('Mit diesen Atomen gibt es nur diese eine Anordnung.'); return; }
+  const next=list[(idx+1)%list.length]; setGraph(next.atoms,next.bonds,null);
+  $('kit-sel').textContent=`🔀 Anordnung ${list.indexOf(next)+1} von ${list.length} – gleiche Atome, anders verknüpft.`;
+};
+
+/* =====================================================================
+   Kalottenmodell: Kugeln in echter Grösse (Van-der-Waals- bzw. Ionenradius in Å)
+   ===================================================================== */
+const VDW={H:1.2,C:1.7,N:1.55,O:1.52,F:1.47,Cl:1.75,Br:1.85,I:1.98,S:1.8,P:1.8,B:1.92,Si:2.1,Li:1.82,Na:2.27,K:2.75,Mg:1.73,Ca:2.31,Al:1.84};
+const IONR={Li:.76,Na:1.02,K:1.38,Mg:.72,Ca:1.0,Al:.54,F:1.33,Cl:1.81,Br:1.96,I:2.2,O:1.4,S:1.84,N:1.46,H:1.4,P:2.1,C:2.6,B:2,Si:2.7};
+function applyKalotte(on){
+  if(!molObj||!molGeom) return;
+  molObj.children.forEach(c=>{ const u=c.userData||{};
+    if(u.kind==='atom'){ const el=molGeom.atoms[u.atom]; c.scale.setScalar(on?(u.q?IONR[el]:VDW[el])*1.5*.82:u.sz); }
+    else if(u.bond!=null||(u.atom!=null&&u.kind!=='atom')) c.visible=!on;
+  });
+}
+
+/* =====================================================================
+   Abzeichen
+   ===================================================================== */
+const STATS_KEY='periodensystem3d-stats', BADGE_KEY='periodensystem3d-abzeichen';
+let stats={rx:[],customRx:0,metal:0,ring:0,triple:0,hb:0}; try{ Object.assign(stats,JSON.parse(localStorage.getItem(STATS_KEY)||'{}')); }catch(_){}
+let earned=new Set(); try{ earned=new Set(JSON.parse(localStorage.getItem(BADGE_KEY)||'[]')); }catch(_){}
+const saveStats=()=>{ try{ localStorage.setItem(STATS_KEY,JSON.stringify(stats)); }catch(_){} };
+const bestScore=()=>{ try{ return +localStorage.getItem(BEST_KEY)||0; }catch(_){ return 0; } };
+const isIonicMol=m=>{ const g=graphOfKnown(m); return g.bonds.some(([i,j])=>bondKind(g.atoms[i],g.atoms[j])==='ion'); };
+const BADGES=[
+  {id:'first',e:'🧪',n:'Erstes Molekül',d:'1 Molekül entdeckt',p:()=>[found.size,1]},
+  {id:'s10',e:'📚',n:'Sammler',d:'10 Moleküle entdeckt',p:()=>[found.size,10]},
+  {id:'s25',e:'🗂️',n:'Grosssammler',d:'25 Moleküle entdeckt',p:()=>[found.size,25]},
+  {id:'all',e:'👑',n:'Komplett',d:`Alle ${MOLS.length} Moleküle`,p:()=>[found.size,MOLS.length]},
+  {id:'acid',e:'🍋',n:'Säure-Profi',d:'Alle Säuren gefunden',p:()=>[[...ACIDS].filter(a=>found.has(a)).length,ACIDS.size]},
+  {id:'ion10',e:'🧂',n:'Ionen-Meister',d:'10 Ionenverbindungen',p:()=>[MOLS.filter(m=>found.has(m.id)&&isIonicMol(m)).length,10]},
+  {id:'iso5',e:'🔀',n:'Isomer-Jäger',d:'5 Isomere entdeckt',p:()=>[isoCount(),5]},
+  {id:'ring',e:'⭕',n:'Ringbauer',d:'Molekül mit Ring gebaut',p:()=>[stats.ring,1]},
+  {id:'triple',e:'🔱',n:'Dreifach stark',d:'Dreifachbindung gebaut',p:()=>[stats.triple,1]},
+  {id:'metal',e:'🔩',n:'Metallbauer',d:'Metallbindung gebaut',p:()=>[stats.metal,1]},
+  {id:'coffee',e:'☕',n:'Kaffeepause',d:'Koffein gebaut',p:()=>[found.has('caffeine')?1:0,1]},
+  {id:'hb',e:'💧',n:'Brückenbauer',d:'Wasserstoffbrücken erkundet',p:()=>[stats.hb,1]},
+  {id:'rx5',e:'💥',n:'Reaktions-Fan',d:'5 Reaktionen angeschaut',p:()=>[stats.rx.length,5]},
+  {id:'myrx',e:'⚖️',n:'Eigene Reaktion',d:'Eigene Reaktion ausgeglichen',p:()=>[stats.customRx,1]},
+  {id:'c500',e:'🥉',n:'Challenge 500',d:'500 Punkte in einer Runde',p:()=>[bestScore(),500]},
+  {id:'c1000',e:'🏆',n:'Challenge 1000',d:'1000 Punkte in einer Runde',p:()=>[bestScore(),1000]}
+];
+let toastT=null;
+function toast(t){ const el=$('m-toast'); el.textContent=t; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>el.hidden=true,3200); }
+function checkBadges(){
+  const fresh=[];
+  const html=BADGES.map(b=>{ const [v,goal]=b.p(), ok=v>=goal; if(ok&&!earned.has(b.id)){ earned.add(b.id); fresh.push(b); }
+    return `<div class="bd ${ok?'':'off'}"><span class="em">${b.e}</span><b>${b.n}</b>${b.d}<i><u style="width:${Math.min(100,100*v/goal)}%"></u></i></div>`; }).join('');
+  $('bd-grid').innerHTML=html; $('bd-count').textContent=`${earned.size} / ${BADGES.length}`;
+  if(fresh.length){ try{ localStorage.setItem(BADGE_KEY,JSON.stringify([...earned])); }catch(_){} toast(`🏅 Neues Abzeichen: ${fresh.map(b=>b.e+' '+b.n).join(', ')}`); }
+}
+
+/* =====================================================================
+   Wasserstoffbrücken: Wassermoleküle im Sechseck (wie in Eis) + Temperatur
+   ===================================================================== */
+let hbTemp=20;
+function stopHB(){ if(hbState){ disposeGroup(hbState.g); hbState=null; } }
+function buildHB(){
+  stopReaction(); clearMol(); stopHB();
+  const S=1.5, R=2.76, D=Math.PI/180, g=new THREE.Group(), mols=[], hbonds=[];
+  const oM=new THREE.MeshStandardMaterial({color:CPK.O[0],roughness:.35}), hM=new THREE.MeshStandardMaterial({color:CPK.H[0],roughness:.35}), bM=new THREE.MeshStandardMaterial({color:0xc9d1e0,roughness:.5});
+  const up=new THREE.Vector3(0,1,0);
+  const mkWater=(O,d1,d2)=>{ const grp=new THREE.Group(); grp.position.copy(O).multiplyScalar(S);
+    const o=new THREE.Mesh(ball,oM); o.scale.setScalar(CPK.O[1]); grp.add(o);
+    const hs=[d1,d2].map(d=>{ const h=new THREE.Mesh(ball,hM); h.scale.setScalar(CPK.H[1]); h.position.copy(d).multiplyScalar(.96*S); grp.add(h);
+      const c=new THREE.Mesh(cyl,bM); c.scale.set(.1,.96*S,.1); c.position.copy(d).multiplyScalar(.48*S); c.quaternion.setFromUnitVectors(up,d.clone().normalize()); grp.add(c); return h; });
+    g.add(grp); const m={grp,base:grp.position.clone(),O:o,H:hs,ph:Math.random()*6.28,w:1.5+Math.random()}; mols.push(m); return m; };
+  const tilt=(d1,ref,ang)=>{ const p=ref.clone().sub(d1.clone().multiplyScalar(ref.dot(d1))).normalize(); return d1.clone().multiplyScalar(Math.cos(ang*D)).add(p.multiplyScalar(Math.sin(ang*D))).normalize(); };
+  const ring=[...Array(6).keys()].map(k=>new THREE.Vector3(Math.cos(k*60*D)*R,Math.sin(k*60*D)*R,k%2?.45:-.45));
+  const inner=ring.map((O,k)=>{ const d1=ring[(k+1)%6].clone().sub(O).normalize(), out=O.clone().setZ(0).normalize().multiplyScalar(.5).add(new THREE.Vector3(0,0,k%2?1:-1));
+    const d2=tilt(d1,out,104.5); return {O,d1,d2,m:mkWater(O,d1,d2)}; });
+  inner.forEach((w,k)=>{ hbonds.push([w.m.H[0],inner[(k+1)%6].m.O]);                 // Ring: H → O des Nachbarn
+    const O2=w.O.clone().add(w.d2.clone().multiplyScalar(R)), a=w.d2.clone(), p=new THREE.Vector3(0,0,1).cross(a).normalize();
+    const h1=tilt(a,p,52), h2=tilt(a,p.clone().negate(),52), m2=mkWater(O2,h1,h2); hbonds.push([w.m.H[1],m2.O]); });
+  const lines=hbonds.map(()=>{ const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]);
+    const l=new THREE.Line(geo,new THREE.LineDashedMaterial({color:0xffd23f,dashSize:.18,gapSize:.12,transparent:true,opacity:1})); g.add(l); return l; });
+  mScene.add(g); hbState={g,mols,hbonds,lines,t:0};
+  const d=(R*2+3)*S/Math.tan(THREE.MathUtils.degToRad(mCam.fov/2))*(mCam.aspect<1?1/mCam.aspect:1)*.75;
+  mCam.position.set(0,-d*.35,d).setLength(d); mControls.target.set(0,0,0); mControls.maxDistance=d*3; mControls.minDistance=3;
+  setHBTemp(hbTemp); if(!stats.hb){ stats.hb=1; saveStats(); checkBadges(); }
+}
+function setHBTemp(T){
+  hbTemp=T; $('hb-temp').value=T; $('hb-tout').textContent=T+' °C';
+  $('hb-state').textContent=T<0?'❄️ Eis: Die Brücken halten die Moleküle starr im Sechseck-Gitter – darum ist Eis leichter als Wasser und schwimmt.'
+    :T<100?'💧 Flüssig: Die Moleküle zappeln, Brücken reissen und bilden sich ständig neu.'
+    :'♨️ Wasserdampf: Die Moleküle sind so schnell, dass alle Brücken reissen – sie fliegen auseinander.';
+}
+$('hb-temp').oninput=e=>setHBTemp(+e.target.value);
+$('hb-facts').innerHTML=[['Wasser H₂O (18 g/mol)','siedet bei 100 °C'],['Ammoniak NH₃ (17 g/mol)','−33 °C'],['Methan CH₄ (16 g/mol)','−162 °C'],['Schwefelwasserstoff H₂S (34 g/mol)','−60 °C']].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+const HB_TMP=new THREE.Vector3(), HB_TMP2=new THREE.Vector3();
+function hbTick(dt){
+  const s=hbState; s.t+=dt; const T=hbTemp, heat=Math.max(0,T+20)/170, amp=.04+heat*.5, spread=T>100?1+(T-100)/50*1.6:1;
+  s.mols.forEach(m=>{ m.grp.position.copy(m.base).multiplyScalar(spread);
+    m.grp.position.x+=Math.sin(s.t*m.w*3+m.ph)*amp; m.grp.position.y+=Math.cos(s.t*m.w*2.6+m.ph*1.3)*amp; m.grp.position.z+=Math.sin(s.t*m.w*2.2+m.ph*.7)*amp;
+    m.grp.rotation.set(Math.sin(s.t*m.w+m.ph)*heat*.4,Math.cos(s.t*m.w*1.1)*heat*.4,0); });
+  s.g.updateMatrixWorld(true);
+  s.lines.forEach((l,k)=>{ const [h,o]=s.hbonds[k]; h.getWorldPosition(HB_TMP); o.getWorldPosition(HB_TMP2);
+    const d=HB_TMP.distanceTo(HB_TMP2), flick=T>=0&&T<100?(Math.sin(s.t*3+k*1.7)>(1-T/110)*.9?0:1):1;
+    l.material.opacity=d>4.2*1.5?0:(T<100?.95*flick:0); l.visible=l.material.opacity>.05;
+    const p=l.geometry.attributes.position; p.setXYZ(0,HB_TMP.x,HB_TMP.y,HB_TMP.z); p.setXYZ(1,HB_TMP2.x,HB_TMP2.y,HB_TMP2.z); p.needsUpdate=true; l.computeLineDistances(); });
+}
+
+/* =====================================================================
+   Eigene Reaktion bauen
+   ===================================================================== */
+let rxB={l:[],r:[]};
+const encGraph=(atoms,bonds)=>atoms.join('.')+'~'+bonds.map(([i,j,o])=>i+'_'+j+'_'+o).join('.');
+function decGraph(s){ const [a,b]=s.split('~'); return {atoms:a.split('.'),bonds:(b||'').split('.').filter(Boolean).map(t=>t.split('_').map(Number))}; }
+function speciesCounts(id){ if(id.startsWith('g:')) return countsOf(decGraph(id.slice(2)).atoms); const m=MOLS.find(x=>x.id===id); return m?m.counts:{[id]:1}; }
+function speciesLabel(id){ if(id.startsWith('g:')) return formulaOf(speciesCounts(id)); const m=MOLS.find(x=>x.id===id); return m?m.f:id; }
+function rxOptions(){
+  const o=[];
+  if(ed.atoms.length&&lab&&lab.valid&&!lab.known) o.push(['g:'+encGraph(ed.atoms,ed.bonds),`Aus dem Baukasten: ${formulaOf(tray)}`]);
+  MOLS.filter(m=>found.has(m.id)).forEach(m=>o.push([m.id,`${m.f} · ${m.name}`]));
+  KIT.forEach(s=>o.push([s,`${s} · ${ELS[s].name} (Atom)`]));
+  return o;
+}
+function renderRxB(){
+  $('rx-pick').innerHTML=rxOptions().map(([v,t])=>`<option value="${v}">${t}</option>`).join('');
+  ['l','r'].forEach(side=>{ const el=$(side==='l'?'rxL':'rxR');
+    el.innerHTML=rxB[side].length?rxB[side].map((it,i)=>`<div class="rxi"><button data-a="-" data-i="${i}" aria-label="weniger">−</button><span>${it.c>1?it.c+' ':''}${speciesLabel(it.id)}</span><button data-a="+" data-i="${i}" aria-label="mehr">+</button><button data-a="x" data-i="${i}" aria-label="entfernen">×</button></div>`).join(''):'<div class="empty">leer</div>';
+    el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const it=rxB[side][+b.dataset.i]; if(b.dataset.a==='+') it.c=Math.min(12,it.c+1); else if(b.dataset.a==='-') it.c=Math.max(1,it.c-1); else rxB[side].splice(+b.dataset.i,1); renderRxB(); }); });
+  rxBalance();
+}
+function sideCounts(list){ const c={}; list.forEach(it=>Object.entries(speciesCounts(it.id)).forEach(([k,v])=>c[k]=(c[k]||0)+v*it.c)); return c; }
+function rxBalance(){
+  const L=sideCounts(rxB.l), R=sideCounts(rxB.r), els=KIT.filter(k=>L[k]||R[k]), out=$('rx-check');
+  $('rx-run').disabled=true; $('rx-auto').disabled=!(rxB.l.length&&rxB.r.length);
+  if(!rxB.l.length||!rxB.r.length){ out.className='msg'; out.textContent='Wähle Stoffe für beide Seiten.'; return false; }
+  const ok=els.every(k=>(L[k]||0)===(R[k]||0)), n=atomTotal(L);
+  out.className=ok?'msg ok':'msg warn';
+  out.innerHTML=els.map(k=>`${k}: ${L[k]||0} | ${R[k]||0} ${(L[k]||0)===(R[k]||0)?'✓':'✗'}`).join(' &nbsp;·&nbsp; ')+'<br>'+(ok?(n>60?'Ausgeglichen – aber zu gross für die Animation (max. 60 Atome).':'✓ Ausgeglichen! Links und rechts gleich viele Atome.'):'Nicht ausgeglichen – Atome gehen bei Reaktionen nie verloren. Tipp: «⚖ Ausgleichen».');
+  $('rx-run').disabled=!ok||n>60; return ok;
+}
+$('rx-addL').onclick=()=>{ const v=$('rx-pick').value; if(!v) return; const ex=rxB.l.find(x=>x.id===v); ex?ex.c++:rxB.l.push({id:v,c:1}); renderRxB(); };
+$('rx-addR').onclick=()=>{ const v=$('rx-pick').value; if(!v) return; const ex=rxB.r.find(x=>x.id===v); ex?ex.c++:rxB.r.push({id:v,c:1}); renderRxB(); };
+$('rx-clear').onclick=()=>{ rxB={l:[],r:[]}; renderRxB(); };
+$('rx-auto').onclick=()=>{
+  const all=[...rxB.l,...rxB.r], nL=rxB.l.length, out=$('rx-check');
+  if(all.length>6){ out.className='msg warn'; out.textContent='Zum automatischen Ausgleichen höchstens 6 Stoffe.'; return; }
+  const sp=all.map(it=>speciesCounts(it.id)), els=[...new Set(sp.flatMap(Object.keys))], c=new Array(all.length).fill(1);
+  let best=null;
+  const rec=i=>{ if(best) return; if(i===all.length){ if(els.every(k=>sp.reduce((s,x,j)=>s+(j<nL?1:-1)*c[j]*(x[k]||0),0)===0)) best=c.slice(); return; }
+    for(let v=1;v<=8&&!best;v++){ c[i]=v; rec(i+1); } };
+  rec(0);
+  if(!best){ out.className='msg warn'; out.textContent='Mit diesen Stoffen geht die Gleichung nicht auf. Prüfe, ob alle nötigen Stoffe dabei sind.'; return; }
+  all.forEach((it,j)=>it.c=best[j]); renderRxB();
+};
+$('rx-run').onclick=()=>{
+  if(!rxBalance()) return;
+  const r={id:'eigen',name:'Eigene Reaktion',l:rxB.l.map(it=>[it.id,it.c]),r:rxB.r.map(it=>[it.id,it.c]),exo:null,
+    desc:'Deine eigene, ausgeglichene Reaktion. Ob sie in Wirklichkeit freiwillig abläuft und Energie frei wird, hängt von den Stoffen ab – die Atombilanz stimmt aber!'};
+  stats.customRx++; saveStats(); showReaction(r); checkBadges();
+};
+
+/* =====================================================================
+   Ionen bilden (Bohr-Modell)
+   ===================================================================== */
+function ionOf(e){
+  const g=e.g, z=e.z;
+  if(z===1) return 1;
+  if(g===1) return 1; if(g===2) return 2;
+  if(g===13&&z>=13&&z<=49) return 3;
+  if(g===15&&z<=15) return -3; if(g===16&&z<=34) return -2; if(g===17&&z<=53) return -1;
+  if(z===30||z===48) return 2; if(z===47) return 1;
+  return 0;
+}
+const SUPC={'+':'⁺','−':'⁻'}, supCharge=q=>(Math.abs(q)>1?sup(Math.abs(q)):'')+(q>0?'⁺':'⁻');
+const NOBLE_NAME={2:'Helium',10:'Neon',18:'Argon',36:'Krypton',54:'Xenon',86:'Radon'};
+function bohrCaption(e){
+  const c=CAT[e.cat].c, q=ionOf(e), on=atom&&atom.ion;
+  let txt='';
+  if(on){ const ion=e.s+supCharge(q), k=Math.abs(q), left=e.z-q, nob=NOBLE_NAME[left];
+    txt=(q>0?`<b>${e.s} → ${ion} + ${k===1?'':k+' '}e⁻</b>: ${e.name} gibt ${k===1?'sein Aussenelektron':k+' Aussenelektronen'} ab.`
+            :`<b>${e.s} + ${k===1?'':k+' '}e⁻ → ${ion}</b>: ${e.name} nimmt ${k===1?'ein Elektron':k+' Elektronen'} auf.`)
+      +(e.z===1?' Übrig bleibt ein nacktes Proton.':nob?` Jetzt hat das Ion so viele Elektronen wie das Edelgas ${nob} – eine volle Aussenschale. Darum ist es stabil.`:' Die äusserste Schale ist jetzt leer bzw. voll besetzt – das ist besonders stabil.')
+      +` Die Zahl der Protonen (${e.z}) bleibt gleich – darum ist das Ion ${q>0?'positiv':'negativ'} geladen.`; }
+  setCap(`${txt?`<div class="txt">${txt}</div>`:''}<div class="row"><span><b style="background:var(--proton)"></b>Proton</span><span><b style="background:var(--neutron)"></b>Neutron</span><span><b style="background:${c}"></b>Elektron</span><span>ziehen = drehen · zoomen</span></div>`
+    +(q?`<div class="btns"><button id="ion-btn">${on?'↺ Neutrales Atom':`⚡ Ion bilden (${e.s}${supCharge(q)})`}</button></div>`:''));
+  if(q) $('ion-btn').onclick=()=>{ if(atom.ion){ buildAtom(e); atomT=10; } else atom.ion={q,t:0}; bohrCaption(e); };
+}
+
+/* =====================================================================
+   Linienspektrum und Flammenfärbung
+   ===================================================================== */
+// Wellenlängen (nm) der wichtigsten sichtbaren Linien, mit relativer Helligkeit
+const SPEC={
+  H:[[410.2,.4],[434.0,.5],[486.1,.8],[656.3,1]],
+  He:[[447.1,.6],[471.3,.3],[492.2,.4],[501.6,.6],[587.6,1],[667.8,.6],[706.5,.5],[728.1,.3]],
+  Li:[[460.3,.3],[610.4,.5],[670.8,1]],
+  Na:[[498.3,.2],[568.8,.3],[589.0,1],[589.6,1]],
+  K:[[404.4,.5],[404.7,.5],[766.5,1],[769.9,1]],
+  Rb:[[420.2,.6],[421.6,.5],[780.0,1]],
+  Cs:[[455.5,1],[459.3,.7]],
+  Mg:[[457.1,.3],[516.7,.6],[517.3,.8],[518.4,1]],
+  Ca:[[393.4,.8],[396.8,.8],[422.7,1],[445.5,.4],[558.9,.4],[616.2,.5],[643.9,.5]],
+  Sr:[[407.8,.7],[421.6,.6],[460.7,1],[640.8,.5],[650.4,.4]],
+  Ba:[[455.4,.8],[493.4,.6],[553.5,1],[614.2,.6],[649.7,.5]],
+  Cu:[[510.6,.8],[515.3,.7],[521.8,1],[578.2,.6]],
+  Zn:[[468.0,.6],[472.2,.7],[481.1,1],[636.2,.8]],
+  Cd:[[467.8,.6],[480.0,.7],[508.6,1],[643.8,1]],
+  Hg:[[404.7,.7],[435.8,1],[546.1,1],[577.0,.6],[579.1,.6]],
+  Ne:[[585.2,1],[588.2,.5],[594.5,.6],[597.6,.4],[603.0,.5],[607.4,.5],[609.6,.5],[614.3,.7],[616.4,.4],[621.7,.5],[626.6,.5],[630.5,.4],[633.4,.6],[638.3,.6],[640.2,.9],[650.7,.6],[659.9,.4],[667.8,.4],[692.9,.5],[703.2,.5]],
+  Ar:[[415.9,.4],[419.8,.3],[420.1,.4],[425.9,.3],[427.2,.3],[430.0,.3],[696.5,.8],[706.7,.7],[714.7,.4],[727.3,.5],[738.4,.7],[750.4,1],[763.5,1]],
+  Kr:[[427.4,.4],[431.9,.5],[436.3,.4],[557.0,1],[587.1,.9],[760.2,.8]],
+  Xe:[[462.4,.8],[467.1,1],[473.4,.5],[480.7,.6],[484.4,.5],[492.3,.5]],
+  Tl:[[535.0,1]],
+  In:[[410.2,.8],[451.1,1]]
+};
+const FLAME={Li:['#ff2340','karminrot'],Na:['#ffb000','gelb-orange'],K:['#c77dff','violett'],Rb:['#d0408f','rotviolett'],Cs:['#8a7dff','blauviolett'],Ca:['#ff5a1f','ziegelrot'],
+  Sr:['#ff1a3c','karminrot'],Ba:['#b5ff6a','fahlgrün'],Cu:['#2fe0b0','blaugrün'],B:['#5dff5d','grün'],In:['#5a6dff','indigoblau'],Tl:['#4dff4d','grün']};
+function wl2rgb(w){
+  let r=0,g=0,b=0;
+  if(w<440){ r=-(w-440)/60; b=1; } else if(w<490){ g=(w-440)/50; b=1; } else if(w<510){ g=1; b=-(w-510)/20; }
+  else if(w<580){ r=(w-510)/70; g=1; } else if(w<645){ r=1; g=-(w-645)/65; } else r=1;
+  const f=w<420?.3+.7*(w-380)/40:w>700?.3+.7*(780-w)/80:1;
+  return `rgb(${Math.round(255*Math.pow(r*f,.8))},${Math.round(255*Math.pow(g*f,.8))},${Math.round(255*Math.pow(b*f,.8))})`;
+}
+let spec=null;
+function startSpec(e){ spec={e,t:0,flame:[],fw:[]}; }
+function specCaption(e){
+  const fl=FLAME[e.s], has=!!SPEC[e.s];
+  setCap(`<div class="txt">${has?`Jedes Element sendet beim Erhitzen Licht nur in ganz bestimmten Farben aus – sein <b>Linienspektrum</b>, ein Fingerabdruck. So weiss man sogar, aus welchen Elementen die Sonne besteht.`
+      :`Für ${e.name} sind hier keine Spektrallinien hinterlegt. Linien gibt es u. a. für H, He, Li, Na, K, Ca, Sr, Ba, Cu, Ne und Hg.`}
+    ${fl?` In der Flamme leuchtet ${e.name} <b>${fl[1]}</b> – genau so entstehen die Farben im Feuerwerk.`:' Eine typische Flammenfärbung hat dieses Element nicht.'}</div>
+    <div class="btns"><button id="fw-btn">🎆 Feuerwerk</button></div>`);
+  $('fw-btn').onclick=()=>{ if(!spec) return; const W=dc.clientWidth, H=dc.clientHeight;
+    for(let b=0;b<3;b++){ const x=W*(.25+.5*Math.random()), y=H*(.3+.2*Math.random()), col=fl?fl[0]:['#ffd23f','#8cc8ff','#ff8a8a'][b];
+      for(let i=0;i<70;i++){ const a=Math.random()*Math.PI*2, v=40+Math.random()*120; spec.fw.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1.4+Math.random()*.6,col,delay:b*.35}); } } };
+}
+function drawSpec(dt){
+  if(!spec) return; spec.t+=dt;
+  const W=dc.clientWidth, H=dc.clientHeight, dpr=Math.min(devicePixelRatio,2); if(!W||!H) return;
+  if(dc.width!==Math.round(W*dpr)||dc.height!==Math.round(H*dpr)){ dc.width=Math.round(W*dpr); dc.height=Math.round(H*dpr); }
+  const x=dctx; x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H);
+  const e=spec.e, lines=SPEC[e.s], L=24, R=W-24, top=86, bh=Math.min(80,H*.16), toX=w=>L+(w-380)/(780-380)*(R-L);
+  x.fillStyle='#e8ecf3'; x.font='600 14px Inter, sans-serif'; x.textAlign='left'; x.fillText(`Linienspektrum von ${e.name}`,L,top-12);
+  x.fillStyle='#04060a'; x.fillRect(L,top,R-L,bh);
+  for(let w=380;w<=780;w+=2){ x.fillStyle=wl2rgb(w); x.globalAlpha=.16; x.fillRect(toX(w),top+bh-7,toX(w+2)-toX(w)+.5,7); } x.globalAlpha=1;
+  if(lines){
+    const tw=1+Math.sin(spec.t*3)*.08;
+    lines.forEach(([w,I])=>{ const xx=toX(w); x.fillStyle=wl2rgb(w); x.globalAlpha=Math.min(1,I*tw); x.shadowColor=wl2rgb(w); x.shadowBlur=12*I; x.fillRect(xx-1.5,top,3,bh-8); });
+    x.shadowBlur=0; x.globalAlpha=1;
+    x.fillStyle='#8c96aa'; x.font='400 10px "IBM Plex Mono", monospace'; x.textAlign='center'; let last=-99;
+    lines.slice().sort((a,b)=>b[1]-a[1]).slice(0,6).sort((a,b)=>a[0]-b[0]).forEach(([w])=>{ const xx=toX(w); if(xx-last>34){ x.fillText(Math.round(w)+' nm',xx,top+bh+14); last=xx; } });
+  } else { x.fillStyle='#5a6478'; x.font='500 13px Inter, sans-serif'; x.textAlign='center'; x.fillText('keine Daten hinterlegt',(L+R)/2,top+bh/2); }
+  x.fillStyle='#5a6478'; x.font='400 10px "IBM Plex Mono", monospace'; x.textAlign='left'; x.fillText('380 nm (violett)',L,top+bh+28); x.textAlign='right'; x.fillText('780 nm (rot)',R,top+bh+28);
+  // Bunsenbrenner mit Flamme
+  const fl=FLAME[e.s], bx=W/2, by=H-205, fh=Math.min(170,by-(top+bh+50));
+  if(fh>40){
+    for(let i=0;i<5;i++) spec.flame.push({x:bx+(Math.random()-.5)*14,y:by,vx:(Math.random()-.5)*12,vy:-(60+Math.random()*70)*fh/150,life:0,max:.7+Math.random()*.6});
+    x.globalCompositeOperation='lighter';
+    spec.flame=spec.flame.filter(p=>{ p.life+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx+=(bx-p.x)*dt*1.5; const f=p.life/p.max; if(f>=1) return false;
+      const inner=f<.25, col=inner||!fl?'#4f8dff':fl[0], r=(inner?5:9)*(1-f*.5);
+      x.globalAlpha=(inner?.35:.28)*(1-f); x.fillStyle=col; x.beginPath(); x.arc(p.x,p.y,r,0,Math.PI*2); x.fill(); return true; });
+    x.globalCompositeOperation='source-over'; x.globalAlpha=1;
+    x.fillStyle='#3a4254'; x.fillRect(bx-8,by,16,40); x.fillRect(bx-22,by+40,44,6);
+    x.fillStyle='#8c96aa'; x.font='400 11px Inter, sans-serif'; x.textAlign='center'; x.fillText(fl?`Flammenfärbung: ${fl[1]}`:'Brennerflamme (keine Färbung)',bx,by+62);
+  }
+  // Feuerwerk
+  x.globalCompositeOperation='lighter';
+  spec.fw=spec.fw.filter(p=>{ if(p.delay>0){ p.delay-=dt; return true; } p.life-=dt; p.vy+=60*dt; p.vx*=.985; p.vy*=.985; p.x+=p.vx*dt; p.y+=p.vy*dt;
+    x.globalAlpha=Math.max(0,Math.min(1,p.life)); x.fillStyle=p.col; x.beginPath(); x.arc(p.x,p.y,2.2,0,Math.PI*2); x.fill(); return p.life>0; });
+  x.globalCompositeOperation='source-over'; x.globalAlpha=1;
+}
+
+/* =====================================================================
+   Trends im Periodensystem (Pfeile über der Tabelle)
+   ===================================================================== */
+const METALLIC={am:1,ae:.92,ln:.85,an:.82,tm:.78,pt:.66,md:.42,nm:.12,hg:.06,ng:0};
+const TRENDS={
+  rad:{n:'Atomradius',h:-1,v:1,txt:'<b>Atomradius</b>: Nach rechts wird das Atom <i>kleiner</i> – mehr Protonen im Kern ziehen die Elektronen enger heran. Nach unten wird es <i>grösser</i> – jede Periode bringt eine neue Elektronenschale dazu.'},
+  en:{n:'Elektronegativität',h:1,v:-1,txt:'<b>Elektronegativität</b> (wie stark ein Atom Bindungselektronen anzieht): steigt nach <i>rechts oben</i>. Fluor ist Spitzenreiter. Edelgase gehen fast keine Bindungen ein und haben meist keinen Wert.'},
+  met:{n:'Metallcharakter',h:-1,v:1,txt:'<b>Metallcharakter</b>: nimmt nach <i>links unten</i> zu. Dort geben Atome ihre Aussenelektronen am leichtesten ab – Francium und Caesium sind die «metallischsten» Elemente.'}
+};
+let trendKey='rad', trendObj=null;
+$('trend-chips').innerHTML=Object.entries(TRENDS).map(([k,t])=>`<button data-k="${k}">${t.n}</button>`).join('');
+$('trend-chips').querySelectorAll('button').forEach(b=>b.onclick=()=>{ trendKey=b.dataset.k; showTrend(trendKey); queueRefresh(); });
+function bigLabel(txt,col){
+  const c=document.createElement('canvas'); c.width=1024; c.height=96; const x=c.getContext('2d');
+  x.font='700 54px Inter, sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.lineWidth=10; x.strokeStyle='rgba(10,13,19,.9)'; x.strokeText(txt,512,50); x.fillStyle=col; x.fillText(txt,512,50);
+  const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false})); s.scale.set(10.5,1,1); s.renderOrder=20; return s;
+}
+function trendArrow(A,B,col){
+  const g=new THREE.Group(), dir=B.clone().sub(A), len=dir.length(), up=new THREE.Vector3(0,1,0), q=new THREE.Quaternion().setFromUnitVectors(up,dir.clone().normalize());
+  const mat=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.85,depthTest:false});
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,len-.7,12),mat); shaft.position.copy(A).addScaledVector(dir,(len-.7)/2/len); shaft.quaternion.copy(q); shaft.renderOrder=19; g.add(shaft);
+  const head=new THREE.Mesh(new THREE.ConeGeometry(.32,.7,16),mat); head.position.copy(A).addScaledVector(dir,(len-.35)/len); head.quaternion.copy(q); head.renderOrder=19; g.add(head);
+  const chev=[...Array(5)].map(()=>{ const c=new THREE.Mesh(new THREE.ConeGeometry(.2,.4,12),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.9,depthTest:false})); c.quaternion.copy(q); c.renderOrder=21; g.add(c); return c; });
+  g.userData.tick=t=>chev.forEach((c,i)=>{ const f=((t*.35+i/5)%1); c.position.copy(A).addScaledVector(dir,f*(len-.8)/len); c.material.opacity=Math.sin(f*Math.PI)*.9; });
+  return g;
+}
+function clearTrend(){ if(trendObj){ disposeGroup(trendObj); trendObj=null; } }
+function showTrend(k){
+  clearTrend(); const T=TRENDS[k];
+  $('trend-chips').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+  $('trend-txt').innerHTML=T.txt;
+  if(layout!=='table'){ setLayout('table'); resetView(); }
+  trendObj=new THREE.Group(); const t0=performance.now()/1000, z=.6;
+  // waagrecht in der Lücke oben (Perioden 1–3, Gruppen 3–12 sind leer)
+  const h=trendArrow(new THREE.Vector3(T.h>0?-7.4:3.6,3.95,z),new THREE.Vector3(T.h>0?3.6:-7.4,3.95,z),0xffcf8a);
+  const v=trendArrow(new THREE.Vector3(-11.4,T.v>0?5.6:-2.8,z),new THREE.Vector3(-11.4,T.v>0?-2.8:5.6,z),0x8cc8ff);
+  const lh=bigLabel(`${T.n} nimmt zu ${T.h>0?'→':'←'}`,'#ffcf8a'); lh.scale.set(9,.86,1); lh.position.set(-1.9,5.1,z);
+  const lv=bigLabel(`nimmt zu ${T.v>0?'↓':'↑'}`,'#8cc8ff'); lv.scale.set(5.2,.5,1); lv.position.set(-11.4,T.v>0?-3.6:6.4,z);
+  trendObj.add(h,v,lh,lv); scene.add(trendObj);
+  trendObj.userData.tick=()=>{ const t=performance.now()/1000-t0; h.userData.tick(t); v.userData.tick(t); };
+  queueRefresh();
+}
+
+/* =====================================================================
+   Element-Vergleich
+   ===================================================================== */
+let cmpFirst=null, cmpPair=null, cmpT=0;
+const cmpWrap=$('cmp'), cmpc=$('cmpc'), cctx=cmpc.getContext('2d');
+$('a-cmp').onclick=()=>{ cmpFirst=current; closeAtom(); $('cmp-pick-txt').textContent=`Tippe ein zweites Element an, um es mit ${current.name} zu vergleichen.`; $('cmp-pick').hidden=false; };
+$('cmp-cancel').onclick=()=>{ cmpFirst=null; $('cmp-pick').hidden=true; };
+$('cmp-close').onclick=closeCompare;
+cmpWrap.addEventListener('pointerdown',ev=>{ if(ev.target===cmpWrap) closeCompare(); });
+$('cmp-swap').onclick=()=>{ if(cmpPair) openCompare(cmpPair[1],cmpPair[0]); };
+$('cmp-other').onclick=()=>{ const a=cmpPair[0]; closeCompare(); cmpFirst=a; $('cmp-pick-txt').textContent=`Tippe ein Element an, um es mit ${a.name} zu vergleichen.`; $('cmp-pick').hidden=false; };
+addEventListener('keydown',ev=>{ if(ev.key==='Escape'){ if(!cmpWrap.hidden) closeCompare(); else if(cmpFirst){ cmpFirst=null; $('cmp-pick').hidden=true; } } });
+function closeCompare(){ cmpWrap.hidden=true; cmpPair=null; canvas.focus({preventScroll:true}); }
+function openCompare(a,b){
+  cmpPair=[a,b]; cmpT=0; cmpWrap.hidden=false;
+  $('cmp-title').innerHTML=`<span style="color:${CAT[a.cat].c}">${a.s}</span> vs. <span style="color:${CAT[b.cat].c}">${b.s}</span>`;
+  const shA=shellsOf(a.z), shB=shellsOf(b.z);
+  const rows=[['Ordnungszahl',a.z,b.z,v=>v],['Atommasse',a.mass,b.mass,v=>fmtMass({mass:v})+' u'],['Atomradius',a.rad,b.rad,v=>v+' pm'],['Elektronegativität',a.en,b.en,v=>v.toFixed(2)],
+    ['Schmelzpunkt',a.mp,b.mp,fmtC],['Siedepunkt',a.bp,b.bp,fmtC],['Dichte',a.rho,b.rho,fmtRho],['Schalen',shA.length,shB.length,v=>v],['Aussenelektronen',shA[shA.length-1],shB[shB.length-1],v=>v],
+    ['Entdeckt',a.year,b.year,fmtYear]];
+  const bar=(v,o,col)=>{ if(v==null||o==null||typeof v!=='number') return ''; const lo=Math.min(0,v,o), hi=Math.max(v,o,1e-9), w=Math.max(3,100*(v-lo)/(hi-lo||1)); return `<i style="width:${w}%;background:${col}"></i>`; };
+  $('cmp-table').innerHTML=`<span></span><div class="h" style="color:${CAT[a.cat].c}">${a.name}</div><div class="h" style="color:${CAT[b.cat].c}">${b.name}</div>`
+    +rows.map(([n,va,vb,f])=>`<dt>${n}</dt><dd>${va==null?'–':f(va)}${n==='Entdeckt'?'':bar(va,vb,CAT[a.cat].c)}</dd><dd>${vb==null?'–':f(vb)}${n==='Entdeckt'?'':bar(vb,va,CAT[b.cat].c)}</dd>`).join('')
+    +`<dt>Kategorie</dt><dd>${CAT[a.cat].n}</dd><dd>${CAT[b.cat].n}</dd>`;
+  const bigger=(a.rad||0)>(b.rad||0)?a:b, small=bigger===a?b:a;
+  $('cmp-note').textContent=a.rad&&b.rad?`${bigger.name} ist ${(bigger.rad/small.rad).toFixed(1).replace('.',',')}-mal so gross (Radius) wie ${small.name}.`+(a.p===b.p?' Beide stehen in derselben Periode.':a.g&&a.g===b.g?' Beide stehen in derselben Gruppe – darum ähneln sie sich chemisch.':''):'';
+}
+function drawCompare(dt){
+  if(cmpWrap.hidden||!cmpPair) return; cmpT+=dt;
+  const W=cmpc.clientWidth, H=cmpc.clientHeight, dpr=Math.min(devicePixelRatio,2); if(!W||!H) return;
+  if(cmpc.width!==Math.round(W*dpr)||cmpc.height!==Math.round(H*dpr)){ cmpc.width=Math.round(W*dpr); cmpc.height=Math.round(H*dpr); }
+  const x=cctx; x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H);
+  const [a,b]=cmpPair, maxR=Math.max(a.rad||100,b.rad||100), cy1=H*.27, cy2=H*.74, sR=Math.min(W/4-20,H*.14)/maxR;
+  x.fillStyle='#8c96aa'; x.font='600 12px Inter, sans-serif'; x.textAlign='left'; x.fillText('GRÖSSE IM VERGLEICH (Atomradius)',20,26); x.fillText('ELEKTRONENHÜLLE (Bohr-Modell)',20,H*.5+8);
+  [a,b].forEach((e,k)=>{ const cx=W*(k?.73:.27), col=CAT[e.cat].c, r=(e.rad||100)*sR*Math.min(1,.4+Math.min(1,cmpT/.8)*.6);
+    const gr=x.createRadialGradient(cx-r*.3,cy1-r*.3,r*.1,cx,cy1,r); gr.addColorStop(0,'#ffffff'); gr.addColorStop(.25,col); gr.addColorStop(1,col+'40');
+    x.fillStyle=gr; x.beginPath(); x.arc(cx,cy1,r,0,Math.PI*2); x.fill();
+    x.fillStyle='#e8ecf3'; x.font='700 20px "Space Grotesk", sans-serif'; x.textAlign='center'; x.fillText(e.s,cx,cy1+r+24);
+    x.fillStyle='#8c96aa'; x.font='400 11px "IBM Plex Mono", monospace'; x.fillText(e.rad?e.rad+' pm':'kein Wert',cx,cy1+r+40);
+    // Bohr
+    const sh=shellsOf(e.z), R0=10, step=Math.min(16,(H*.22-R0)/Math.max(1,sh.length));
+    x.fillStyle='#ff6b5a'; x.beginPath(); x.arc(cx,cy2,R0*.7,0,Math.PI*2); x.fill();
+    sh.forEach((n,s)=>{ const rr=R0+step*(s+1); x.strokeStyle=col+'55'; x.lineWidth=1; x.beginPath(); x.arc(cx,cy2,rr,0,Math.PI*2); x.stroke();
+      for(let i=0;i<n;i++){ const ang=i/n*Math.PI*2+cmpT*(1.2/(s+1)); x.fillStyle=col; x.beginPath(); x.arc(cx+Math.cos(ang)*rr,cy2+Math.sin(ang)*rr,2.4,0,Math.PI*2); x.fill(); } });
+    x.fillStyle='#8c96aa'; x.font='400 11px "IBM Plex Mono", monospace'; x.textAlign='center'; x.fillText(sh.join(' · '),cx,cy2+R0+step*sh.length+18);
+  });
+}
 
 /* ---------- Quiz ---------- */
 const QPOOL=EL.filter(e=>e.z<=56||[74,78,79,80,82,86,92].includes(e.z));
@@ -2009,14 +2560,17 @@ function frame(now){
   if(camAnim){ camAnim.t=Math.min(1,camAnim.t+dt/1.1); const k=ease(camAnim.t);
     camera.position.lerpVectors(camAnim.fromP,camAnim.toP,k); controls.target.lerpVectors(camAnim.fromT,camAnim.toT,k);
     if(camAnim.t>=1) camAnim=null; }
+  if(trendObj&&trendObj.userData.tick) trendObj.userData.tick();
   controls.update();
   renderer.render(scene,camera);
+  drawCompare(dt);
   if(atomOpen){
     if(aView==='decay') drawDecay(dt);
+    else if(aView==='spec') drawSpec(dt);
     else { if(aView==='bohr') updateAtom(dt,now/1000); else if(orbObj){ atomT+=dt; orbObj.scale.setScalar(Math.max(easeOut(atomT/0.9),0.01)); }
       aControls.update(); aRenderer.render(aScene,aCam); }
   }
-  if(molOpen){ if(rxState) rxTick(dt); if(molObj){ molT+=dt; molObj.scale.setScalar(Math.max(easeOut(molT/0.7),0.01)); } mControls.update(); mRenderer.render(mScene,mCam); }
+  if(molOpen){ if(rxState) rxTick(dt); if(hbState) hbTick(dt); if(molObj&&molObj.userData.tick) molObj.userData.tick(dt); if(molObj){ molT+=dt; molObj.scale.setScalar(Math.max(easeOut(molT/0.7),0.01)); } mControls.update(); mRenderer.render(mScene,mCam); }
   requestAnimationFrame(frame);
 }
 
