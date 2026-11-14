@@ -1128,36 +1128,77 @@ function hintOf(r){
   return parts.join(' ');
 }
 
-/* ---------- 3D-Anordnung (VSEPR): Bindungen als Federn, Elektronenpaare stossen sich ab ---------- */
-const LPF=1.6; // ergibt Wasser ≈ 104°, Ammoniak ≈ 107°, Methan 109,5°
+/* ---------- 3D-Anordnung nach VSEPR ----------
+   Bindungen und Bindungswinkel (über 1-3-Abstände) als Federn, Doppelbindungen und ihre Nachbarn flach,
+   nicht gebundene Atome stossen sich ab. Mehrere Durchläufe, der mit der kleinsten Spannung gewinnt. */
 function molLayout(atoms,bonds,seed){
-  const n=atoms.length, rand=rng(seed), nb=Array.from({length:n},()=>[]), ord=new Array(n).fill(0);
-  bonds.forEach(([i,j,o])=>{ nb[i].push(j); nb[j].push(i); ord[i]+=o; ord[j]+=o; });
-  const R0=Math.cbrt(n)*1.4, P=atoms.map(()=>[(rand()-.5)*R0,(rand()-.5)*R0,(rand()-.5)*R0]);
+  const n=atoms.length, nb=Array.from({length:n},()=>[]), ord=new Array(n).fill(0), multi=new Array(n).fill(false);
+  bonds.forEach(([i,j,o])=>{ nb[i].push(j); nb[j].push(i); ord[i]+=o; ord[j]+=o; if(o>=2&&!METAL.has(atoms[i])&&!METAL.has(atoms[j])){ multi[i]=multi[j]=true; } });
   const bl=(i,j,o)=>{ const r=(ELS[atoms[i]].rad+ELS[atoms[j]].rad)/100; return r*(o===2?.87:o===3?.78:1); };
-  const springs=bonds.map(([i,j,o])=>[i,j,bl(i,j,o)]), groups=[], bonded=new Set(bonds.map(([i,j])=>i<j?i+'|'+j:j+'|'+i));
-  for(let i=0;i<n;i++){
-    const s=atoms[i], dom=nb[i].slice();
-    if(!METAL.has(s)&&VE[s]!=null&&nb[i].length>=2){ const lp=Math.max(0,Math.floor((VE[s]-ord[i])/2));
-      for(let k=0;k<lp;k++){ const v=P.length; P.push([P[i][0]+rand()-.5,P[i][1]+rand()-.5,P[i][2]+rand()-.5]); springs.push([i,v,.6]); dom.push(v); } }
-    if(dom.length>=2) groups.push([i,dom]);
+  const blen={}; bonds.forEach(([i,j,o])=>{ blen[i+'|'+j]=blen[j+'|'+i]=bl(i,j,o); });
+  const D=Math.PI/180, springs=[], wide=[], planes=[], near=new Set(), SN=new Array(n).fill(0);
+  bonds.forEach(([i,j])=>{ springs.push([i,j,blen[i+'|'+j],1]); near.add(i<j?i+'|'+j:j+'|'+i); });
+  for(let c=0;c<n;c++){
+    const s=atoms[c], k=nb[c].length;
+    let lp=(!METAL.has(s)&&VE[s]!=null)?Math.max(0,Math.floor((VE[s]-ord[c])/2)):0;
+    // Stickstoff neben einer Doppelbindung (Amid, aromatischer Ring) ist flach
+    if(s==='N'&&k===3&&lp===1&&nb[c].some(j=>multi[j])) lp=0;
+    const sn=SN[c]=k+lp; if(k<2) continue;
+    for(let x=0;x<k;x++) for(let y=x+1;y<k;y++){ const a=nb[c][x], b=nb[c][y]; near.add(a<b?a+'|'+b:b+'|'+a); }
+    if(METAL.has(s)) continue;                                        // Ionen: keine festen Winkel
+    let th=null;
+    if(sn===2) th=180;
+    else if(sn===3) th=lp?118:120;
+    else if(sn===4) th=lp===0?109.5:lp===1?107:104.5;
+    if(th!==null){
+      for(let x=0;x<k;x++) for(let y=x+1;y<k;y++){ const a=nb[c][x], b=nb[c][y]; if(METAL.has(atoms[a])||METAL.has(atoms[b])) continue;
+        const la=blen[c+'|'+a], lb=blen[c+'|'+b]; springs.push([a,b,Math.sqrt(la*la+lb*lb-2*la*lb*Math.cos(th*D)),.6]); }
+      if(sn===3&&k===3) planes.push([c,...nb[c]]);                 // flaches Dreieck
+    } else wide.push(c);                                              // 5 oder 6 Bindungen: Nachbarn gleichmässig verteilen
   }
-  const m=P.length, F=P.map(()=>[0,0,0]), T=700;
-  for(let it=0;it<T;it++){
-    for(const f of F){ f[0]=f[1]=f[2]=0; }
-    for(const [i,j,L] of springs){ const d=[P[j][0]-P[i][0],P[j][1]-P[i][1],P[j][2]-P[i][2]], len=Math.hypot(...d)||1e-6, k=.5*(len-L)/len;
-      for(let a=0;a<3;a++){ F[i][a]+=k*d[a]; F[j][a]-=k*d[a]; } }
-    for(const [c,dom] of groups){ const u=dom.map(v=>{ const d=[P[v][0]-P[c][0],P[v][1]-P[c][1],P[v][2]-P[c][2]], l=Math.hypot(...d)||1e-6; return [d[0]/l,d[1]/l,d[2]/l,l]; });
-      for(let x=0;x<dom.length;x++) for(let y=x+1;y<dom.length;y++){ const w=[u[x][0]-u[y][0],u[x][1]-u[y][1],u[x][2]-u[y][2]], l=Math.max(Math.hypot(...w),.05),
-          k=.12*(dom[x]>=n?LPF:1)*(dom[y]>=n?LPF:1)/(l*l*l); // freie Elektronenpaare brauchen mehr Platz
-        for(let a=0;a<3;a++){ F[dom[x]][a]+=k*w[a]*u[x][3]; F[dom[y]][a]-=k*w[a]*u[y][3]; } } }
-    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){ if(bonded.has(i+'|'+j)||nb[i].some(x=>nb[j].includes(x))) continue; // Winkel regeln die Elektronenpaare
-      const d=[P[j][0]-P[i][0],P[j][1]-P[i][1],P[j][2]-P[i][2]], len=Math.hypot(...d)||1e-6, lim=nb[i].length&&nb[j].length?2.3:2.8;
-      if(len<lim){ const k=.25*(lim-len)/len; for(let a=0;a<3;a++){ F[i][a]-=k*d[a]; F[j][a]+=k*d[a]; } } }
-    const step=.35*(1-it/T)+.05;
-    for(let i=0;i<m;i++){ let s=step; const fl=Math.hypot(...F[i]); if(fl*s>.3) s=.3/fl; for(let a=0;a<3;a++) P[i][a]+=F[i][a]*s; }
+  // Doppelbindung zwischen zwei «flachen» Atomen (wie in Ethen): beide Enden in einer Ebene
+  bonds.forEach(([i,j,o])=>{ if(o===2&&SN[i]===3&&SN[j]===3&&!METAL.has(atoms[i])&&!METAL.has(atoms[j])) planes.push([...new Set([i,j,...nb[i],...nb[j]])]); });
+  const ringFlat=atoms.map((s,i)=>SN[i]===3&&!METAL.has(s));
+  // konjugierte Ringe (z. B. Koffein): ganzer Ring flach
+  { const cyc=[]; const seen=new Set();
+    const dfs=(start,u,path)=>{ for(const v of nb[u]){ if(!ringFlat[v]) continue; if(v===start&&path.length>=5&&path.length<=6){ const key=[...path].sort((a,b)=>a-b).join(','); if(!seen.has(key)){ seen.add(key); cyc.push(path.slice()); } }
+        else if(!path.includes(v)&&path.length<6) { path.push(v); dfs(start,v,path); path.pop(); } } };
+    for(let i=0;i<n;i++) if(ringFlat[i]) dfs(i,i,[i]);
+    cyc.forEach(r=>planes.push([...new Set([...r,...r.flatMap(i=>nb[i])])])); }
+
+  function run(rseed){
+    const rand=rng(rseed), R0=Math.cbrt(n)*1.5, P=atoms.map(()=>[(rand()-.5)*R0,(rand()-.5)*R0,(rand()-.5)*R0]), F=P.map(()=>[0,0,0]), T=900;
+    const energy=()=>{ let E=0;
+      for(const [i,j,L,k] of springs){ const d=Math.hypot(P[j][0]-P[i][0],P[j][1]-P[i][1],P[j][2]-P[i][2]); E+=k*(d-L)*(d-L); }
+      for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){ if(near.has(i+'|'+j)) continue; const d=Math.hypot(P[j][0]-P[i][0],P[j][1]-P[i][1],P[j][2]-P[i][2]); const lim=atoms[i]==='H'&&atoms[j]==='H'?1.9:2.4; if(d<lim) E+=(lim-d)*(lim-d); }
+      return E; };
+    for(let it=0;it<T;it++){
+      for(const f of F){ f[0]=f[1]=f[2]=0; }
+      for(const [i,j,L,k] of springs){ const d=[P[j][0]-P[i][0],P[j][1]-P[i][1],P[j][2]-P[i][2]], len=Math.hypot(...d)||1e-6, f=k*.5*(len-L)/len;
+        for(let a=0;a<3;a++){ F[i][a]+=f*d[a]; F[j][a]-=f*d[a]; } }
+      for(const c of wide){ const u=nb[c].map(v=>{ const d=[P[v][0]-P[c][0],P[v][1]-P[c][1],P[v][2]-P[c][2]], l=Math.hypot(...d)||1e-6; return [d[0]/l,d[1]/l,d[2]/l,l]; });
+        for(let x=0;x<u.length;x++) for(let y=x+1;y<u.length;y++){ const w=[u[x][0]-u[y][0],u[x][1]-u[y][1],u[x][2]-u[y][2]], l=Math.max(Math.hypot(...w),.05), k=.15/(l*l*l);
+          // nur seitwärts schieben (tangential), sonst würden die Bindungen gedehnt
+          const wx=w[0]*u[x][0]+w[1]*u[x][1]+w[2]*u[x][2], wy=w[0]*u[y][0]+w[1]*u[y][1]+w[2]*u[y][2];
+          for(let a=0;a<3;a++){ const fx=k*(w[a]-wx*u[x][a])*u[x][3], fy=k*(w[a]-wy*u[y][a])*u[y][3]; F[nb[c][x]][a]+=fx; F[nb[c][y]][a]-=fy; F[c][a]-=fx-fy; } } }
+      if(it>T*.25) for(const g of planes){   // Ebene durch die Gruppe, alle Atome hineinziehen
+        const c=[0,0,0]; g.forEach(i=>{ for(let a=0;a<3;a++) c[a]+=P[i][a]/g.length; });
+        const C=[[0,0,0],[0,0,0],[0,0,0]]; g.forEach(i=>{ const v=[P[i][0]-c[0],P[i][1]-c[1],P[i][2]-c[2]]; for(let a=0;a<3;a++) for(let b=0;b<3;b++) C[a][b]+=v[a]*v[b]; });
+        // kleinster Eigenvektor = Normale (Potenzmethode auf (tr·I − C))
+        const tr=C[0][0]+C[1][1]+C[2][2]+1e-6; let nv=[.3,.5,.8];
+        for(let q=0;q<12;q++){ const m=[0,1,2].map(a=>tr*nv[a]-(C[a][0]*nv[0]+C[a][1]*nv[1]+C[a][2]*nv[2])), l=Math.hypot(...m)||1; nv=m.map(x=>x/l); }
+        g.forEach(i=>{ const dist=(P[i][0]-c[0])*nv[0]+(P[i][1]-c[1])*nv[1]+(P[i][2]-c[2])*nv[2]; for(let a=0;a<3;a++) F[i][a]-=.5*dist*nv[a]; }); }
+      for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){ if(near.has(i+'|'+j)) continue;
+        const d=[P[j][0]-P[i][0],P[j][1]-P[i][1],P[j][2]-P[i][2]], len=Math.hypot(...d)||1e-6, lim=!nb[i].length||!nb[j].length?2.8:atoms[i]==='H'&&atoms[j]==='H'?1.9:2.4;
+        if(len<lim){ const f=.3*(lim-len)/len; for(let a=0;a<3;a++){ F[i][a]-=f*d[a]; F[j][a]+=f*d[a]; } } }
+      const step=.4*(1-it/T)+.04;
+      for(let i=0;i<n;i++){ let s=step; const fl=Math.hypot(...F[i]); if(fl*s>.3) s=.3/fl; for(let a=0;a<3;a++) P[i][a]+=F[i][a]*s; }
+    }
+    return {P,E:energy()};
   }
-  return P.slice(0,n);
+  const tries=n<=4?1:n<=12?3:5; let best=null;
+  for(let t=0;t<tries;t++){ const r=run(seed+t*7919); if(!best||r.E<best.E) best=r; }
+  return best.P;
 }
 /* Graph -> darstellbare Struktur {a,b,stubs} */
 function graphStruct(atoms,bonds,free,loose,seed){
