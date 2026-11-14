@@ -147,6 +147,27 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
 .cmpt dd i{display:block;height:4px;border-radius:2px;min-width:2px}
 .cmpt dd.win{color:var(--fg);font-weight:600}
 .mini button.on{border-color:var(--accent);color:var(--accent)}
+#bc{touch-action:none;cursor:default}
+.kit button{touch-action:none}
+.kit,#bc,#m-stage{user-select:none;-webkit-user-select:none}
+.kit-ghost{position:fixed;z-index:50;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font:700 15px var(--f-display);pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 6px 18px rgba(0,0,0,.5);opacity:.92}
+.lvl{display:flex;flex-direction:column;gap:10px}
+.lvl-path{display:flex;flex-wrap:wrap;gap:5px}
+.lvl-path button{font:600 12px var(--f-mono);color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;min-width:36px}
+.lvl-path button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.lvl-path button:disabled{opacity:.35;cursor:not-allowed}
+.lvl-path small{display:block;font-size:9px;color:#ffcf8a;letter-spacing:-1px}
+.lvl h3{margin:0;font:700 17px var(--f-display)}
+.boxes{display:flex;flex-direction:column;gap:6px}
+.box{display:flex;align-items:center;gap:10px;border:1.5px dashed var(--line);border-radius:10px;padding:8px 10px;font-size:13px}
+.box b{font:700 15px var(--f-mono);min-width:64px}
+.box span{flex:1;color:var(--muted)}
+.box i{font-style:normal;font:600 12px var(--f-mono);color:var(--muted)}
+.box.cur{border-color:var(--accent);border-style:solid}
+.box.done{border-color:var(--good);border-style:solid;background:#6be3a014}
+.box.done i{color:var(--good)}
+.box.flash{animation:boxflash .9s ease}
+@keyframes boxflash{0%,100%{background:#6be3a014}40%{background:#6be3a055}}
 .badges summary{cursor:pointer;font:600 13px var(--f-body);color:var(--fg);padding:6px 0}
 .badges summary span{color:var(--muted);font:500 12px var(--f-mono)}
 .bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px}
@@ -332,9 +353,11 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
   <div class="card" role="dialog" aria-modal="true" aria-labelledby="m-name">
     <button class="close" id="m-close" aria-label="Schliessen">×</button>
     <div class="stage" id="m-stage">
-      <canvas id="mc" class="gl" aria-label="3D-Molekül"></canvas>
+      <canvas id="bc" aria-label="Baufläche: Atome hierher ziehen"></canvas>
+      <canvas id="mc" class="gl" hidden aria-label="3D-Molekül"></canvas>
       <canvas id="lc" hidden aria-label="Lewis-Formel"></canvas>
-      <div class="tabs" id="m-views">
+      <div class="tabs" id="m-views" hidden>
+        <button id="m-back">← Baufläche</button>
         <button data-v="3d" aria-pressed="true">3D</button>
         <button data-v="lewis" aria-pressed="false">Lewis</button>
         <button data-v="pol" aria-pressed="false">Polarität</button>
@@ -346,31 +369,27 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums
     <div class="side">
       <div class="modes" id="m-modes" role="group" aria-label="Modus">
         <button data-m="build" aria-pressed="true">🧪 Bauen</button>
+        <button data-m="level" aria-pressed="false">🎯 Aufgaben</button>
         <button data-m="react" aria-pressed="false">💥 Reaktionen</button>
         <button data-m="hb" aria-pressed="false">💧 H-Brücken</button>
       </div>
       <div class="top"><div><h2 id="m-name"></h2><div class="cat" id="m-formula"></div></div></div>
       <div class="sec" id="sec-build">
-        <div class="chal" id="chal" hidden>
-          <div class="chal-h"><b id="ch-title">🏆 Challenge</b><span id="ch-score">0 Punkte</span></div>
-          <div class="chal-task" id="ch-task"></div>
-          <div class="chal-bar" id="ch-bar"><i id="ch-time"></i></div>
-          <div class="chal-meta"><span id="ch-step"></span><span id="ch-prog"></span></div>
-          <div class="mini" id="ch-btns"><button id="ch-skip">Überspringen</button><button id="ch-stop">Beenden</button></div>
-        </div>
+        <div class="lvl" id="lvl-panel" hidden></div>
         <div>
-          <div class="label">Baukasten · Atom antippen = am gewählten Atom andocken</div>
+          <div class="label" id="kit-label">Atome · ins Feld ziehen oder antippen</div>
           <div class="kit" id="kit"></div>
         </div>
-        <div class="tray" id="tray"></div>
         <div class="msg" id="kit-msg" aria-live="polite"></div>
         <div class="msg sel" id="kit-sel"></div>
-        <div class="mini"><button id="kit-fill">H auffüllen</button><button id="kit-link" aria-pressed="false">⤳ Verbinden</button><button id="kit-del">🗑 Entfernen</button><button id="kit-undo">↶ Zurück</button><button id="kit-clear">Leeren</button></div>
-        <div class="mini"><button id="kit-iso">🔀 Andere Anordnung</button><button id="kit-tip">💡 Tipp</button><button id="kit-share">🔗 Teilen</button><button id="ch-start">🏆 Challenge</button></div>
-        <div class="fact" id="m-desc"></div>
-        <dl class="facts" id="m-facts"></dl>
-        <div><div class="label" id="found-label">Entdeckt</div><div class="molchips" id="mol-list"></div></div>
-        <details class="badges"><summary>🏅 Abzeichen <span id="bd-count"></span></summary><div class="bgrid" id="bd-grid"></div></details>
+        <div class="mini"><button id="kit-fill">H auffüllen</button><button id="kit-del">🗑 Entfernen</button><button id="kit-undo">↶ Zurück</button><button id="kit-clear">Leeren</button></div>
+        <div class="sec" id="build-extra">
+          <div class="fact" id="m-desc"></div>
+          <dl class="facts" id="m-facts"></dl>
+          <div class="mini"><button id="kit-3d">🧊 In 3D ansehen</button><button id="kit-iso">🔀 Andere Anordnung</button><button id="kit-tip">💡 Tipp</button><button id="kit-share">🔗 Teilen</button></div>
+          <div><div class="label" id="found-label">Entdeckt</div><div class="molchips" id="mol-list"></div></div>
+          <details class="badges"><summary>🏅 Abzeichen <span id="bd-count"></span></summary><div class="bgrid" id="bd-grid"></div></details>
+        </div>
       </div>
       <div class="sec" id="sec-react" hidden>
         <div class="fact" id="rx-desc"></div>
@@ -1129,7 +1148,9 @@ MOLS.push(
   M2('caco3','CaCO₃','Calciumcarbonat','Ca C O O O','1=2 1-3 1-4 0-3 0-4','Kalk, Kreide, Marmor und Eierschalen. Ca²⁺ und das Carbonat-Ion CO₃²⁻.'),
   M2('nahco3','NaHCO₃','Natron','Na C O O O:1','1=2 1-3 1-4 0-3','Backpulver: setzt beim Backen CO₂ frei und lässt den Teig aufgehen.'),
   M2('glucose','C₆H₁₂O₆','Traubenzucker (Glucose)','C:1 C:1 C:1 C:1 C:1 C:2 O O:1 O:1 O:1 O:1 O:1','0-1 1-2 2-3 3-4 4-6 6-0 4-5 0-7 1-8 2-9 3-10 5-11','Der Treibstoff deiner Zellen. Pflanzen stellen ihn bei der Fotosynthese aus CO₂ und Wasser her.'),
-  M2('caffeine','C₈H₁₀N₄O₂','Koffein','N C N C C C N C:1 N O O C:3 C:3 C:3','0-1 1-2 2-3 3=4 4-5 5-0 3-8 8=7 7-6 6-4 1=9 5=10 0-11 2-12 6-13','Macht Kaffee, Tee und Energydrinks anregend: Es blockiert im Gehirn die Müdigkeits-Signale.')
+  M2('caffeine','C₈H₁₀N₄O₂','Koffein','N C N C C C N C:1 N O O C:3 C:3 C:3','0-1 1-2 2-3 3=4 4-5 5-0 3-8 8=7 7-6 6-4 1=9 5=10 0-11 2-12 6-13','Macht Kaffee, Tee und Energydrinks anregend: Es blockiert im Gehirn die Müdigkeits-Signale.'),
+  M2('ether','CH₃OCH₃','Dimethylether','C:3 O C:3','0-1 1-2','Gleiche Atome wie Ethanol, aber das O sitzt in der Mitte: ein Gas, kein Alkohol. Treibgas in Spraydosen.'),
+  M2('isobutan','C₄H₁₀','Isobutan','C:3 C:1 C:3 C:3','0-1 1-2 1-3','Ein Isomer von Butan mit verzweigter Kette. Kältemittel in modernen Kühlschränken.')
 );
 const molWrap=document.getElementById('mol'), mc=document.getElementById('mc');
 const mRenderer=new THREE.WebGLRenderer({canvas:mc,antialias:true,alpha:true});
@@ -1398,14 +1419,18 @@ function knownPanel(m){
   return {name:m.name,f:m.f,desc:`<div class="label">Was steckt dahinter?</div>${m.desc}`,facts,els:KIT.filter(k=>m.counts[k])};
 }
 
-/* ---------- Baukasten: Molekül-Editor ----------
-   Du bestimmst, wo ein Atom andockt: Atom im Bild antippen = auswählen, Bindung antippen = Einfach → Doppel → Dreifach. */
-let tray={};                                   // Zusammensetzung, wird aus dem Graphen abgeleitet
-let ed={atoms:[],bonds:[]}, edPos=[], edSel=null, edHist=[], connectMode=false, edCamKept=false;
+/* ---------- Baukasten: 2D-Baufläche ----------
+   Nach dem Vorbild von PhET «Build a Molecule» und Sokobond:
+   Atome ins Feld ziehen · nah an ein anderes Atom ziehen = Bindung · freie Elektronen als Punkte ·
+   Bindung antippen = doppelt/dreifach · Atom antippen = auswählen (✂ trennt seine Bindungen, zweites Atom antippen = verbinden) ·
+   über jedem Molekül Name und Formel, 3D-Ansicht auf Knopfdruck. */
+let tray={};
+let ed={atoms:[],bonds:[]}, edXY=[], edHist=[], selAtom=null, focusAtom=null, viewerOn=false, compInfos=[], boardCharges=[];
+let edPos=[], edSel=null, connectMode=false, edCamKept=false;     // Reste der alten 3D-Bauweise (Kompatibilität)
 const FOUND_KEY='periodensystem3d-entdeckt';
 let found=new Set(); try{ found=new Set(JSON.parse(localStorage.getItem(FOUND_KEY)||'[]')); }catch(_){}
 const saveFound=()=>{ try{ localStorage.setItem(FOUND_KEY,JSON.stringify([...found])); }catch(_){} };
-const BYKEY={}; MOLS.forEach(m=>{ const k=countsKey(m.counts); if(BYKEY[k]) console.warn('Gleiche Formel',m.id,BYKEY[k].id); BYKEY[k]=m; });
+const BYF={}; MOLS.forEach(m=>{ const k=countsKey(m.counts); (BYF[k]||(BYF[k]=[])).push(m); });
 
 /* Struktur-Fingerabdruck: gleiche Verknüpfung = gleicher Schlüssel (so werden Isomere unterschieden) */
 function wlKey(atoms,bonds){
@@ -1418,14 +1443,15 @@ function wlKey(atoms,bonds){
 function graphOfKnown(m){
   if(m.g) return {atoms:m.g.atoms,bonds:m.g.bonds,pos:null};
   const st=m.build();
-  if(st.a[0][4]) return {atoms:['Na','Cl'],bonds:[[0,1,1]],pos:[[-1.4,0,0],[1.4,0,0]]};
-  return {atoms:st.a.map(r=>r[0]),bonds:st.b.map(([i,j,o])=>[i,j,Math.max(1,o)]),pos:st.a.map(r=>r.slice(1,4))};
+  if(st.a[0][4]) return {atoms:['Na','Cl'],bonds:[[0,1,1]],pos:null};
+  return {atoms:st.a.map(r=>r[0]),bonds:st.b.map(([i,j,o])=>[i,j,Math.max(1,o)]),pos:null};
 }
 MOLS.forEach(m=>{ const g=graphOfKnown(m); m.wl=wlKey(g.atoms,g.bonds); });
 function matchKnown(atoms,bonds,counts){
-  const m=BYKEY[countsKey(counts)]; if(!m) return {known:null,isomerOf:null};
-  if(atoms.some(a=>METAL.has(a))) return {known:m,isomerOf:null};        // Ionenverbindung: Zusammensetzung genügt
-  return wlKey(atoms,bonds)===m.wl?{known:m,isomerOf:null}:{known:null,isomerOf:m};
+  const list=BYF[countsKey(counts)]; if(!list) return {known:null,isomerOf:null};
+  if(atoms.some(a=>METAL.has(a))) return {known:list[0],isomerOf:null};          // Ionenverbindung: Zusammensetzung genügt
+  const k=wlKey(atoms,bonds), m=list.find(x=>x.wl===k);
+  return m?{known:m,isomerOf:null}:{known:null,isomerOf:list[0]};
 }
 
 /* Bindigkeit */
@@ -1437,181 +1463,336 @@ const valOf=i=>{ const u=usedOf(i), o=VAL[ed.atoms[i]]; return o.find(v=>v>=u)??
 const freeOf=i=>METAL.has(ed.atoms[i])&&hasKind(i,'met')&&!hasKind(i,'ion')?0:valOf(i)-usedOf(i);
 const degOf=i=>ed.bonds.filter(bd=>bd[0]===i||bd[1]===i).length;
 const canBond=(i,el)=>bondKind(ed.atoms[i],el)==='met'?degOf(i)<12:usedOf(i)<maxVal(ed.atoms[i]);
-const KIND_NAME={cov:'kovalent',ion:'Ionenbindung',met:'Metallbindung'};
+const bonded=(i,j)=>ed.bonds.some(([a,b])=>(a===i&&b===j)||(a===j&&b===i));
+const atomName=i=>ELS[ed.atoms[i]].name;
 function bondInfoText(k){
   const [i,j,o]=ed.bonds[k], A=ed.atoms[i], B=ed.atoms[j], kd=bondKind(A,B);
   if(kd==='met') return `${A}–${B}: Metallbindung – die Aussenelektronen gehören allen Metallatomen gemeinsam (Elektronengas). Darum leiten Metalle Strom.`;
   if(kd==='ion'){ const m=METAL.has(A)?A:B, nm=m===A?B:A;
-    return `${m}–${nm}: Ionenbindung – ${ELS[m].name} gibt ${o} Elektron${o>1?'en':''} an ${ELS[nm].name} ab. Kein gemeinsames Elektronenpaar, sondern Anziehung von + und −. Antippen = mehr Elektronen übergeben.`; }
+    return `${m}–${nm}: Ionenbindung – ${ELS[m].name} gibt ${o} Elektron${o>1?'en':''} an ${ELS[nm].name} ab. Kein gemeinsames Elektronenpaar, sondern Anziehung von + und −.`; }
   const d=dEN(A,B);
-  return `${A}${['','–','=','≡'][o]}${B}: ${['','Einfach','Doppel','Dreifach'][o]}bindung, ${d<0.4?'unpolar':'polar'} kovalent (ΔEN = ${d.toFixed(2).replace('.',',')}) – gemeinsame Elektronenpaare.`;
+  return `${A}${['','–','=','≡'][o]}${B}: ${['','Einfach','Doppel','Dreifach'][o]}bindung, ${d<0.4?'unpolar':'polar'} kovalent (ΔEN = ${d.toFixed(2).replace('.',',')}).`;
 }
-const atomName=i=>ELS[ed.atoms[i]].name;
-function components(){ const n=ed.atoms.length, p=[...Array(n).keys()], f=x=>p[x]===x?x:(p[x]=f(p[x])); let c=n;
-  ed.bonds.forEach(([i,j])=>{ const a=f(i),b=f(j); if(a!==b){ p[a]=b; c--; } }); return c; }
-function snap(){ edHist.push(JSON.stringify({a:ed.atoms,b:ed.bonds,p:edPos,s:edSel})); if(edHist.length>200) edHist.shift(); }
-function edReset(){ ed={atoms:[],bonds:[]}; edPos=[]; edSel=null; connectMode=false; edCamKept=false; }
-function nearPos(p){
-  const q=edPos[p]||[0,0,0], away=[0,0,0];
-  ed.bonds.forEach(([a,b])=>{ const o=a===p?b:b===p?a:-1; if(o<0||!edPos[o]) return; for(let k=0;k<3;k++) away[k]-=edPos[o][k]-q[k]; });
-  const d=away.map(v=>v+(Math.random()-.5)*.8), l=Math.hypot(...d)||1; return q.map((v,k)=>v+d[k]/l*1.3);
+function compsList(){
+  const n=ed.atoms.length, p=[...Array(n).keys()], f=x=>p[x]===x?x:(p[x]=f(p[x]));
+  ed.bonds.forEach(([i,j])=>{ const a=f(i),b=f(j); if(a!==b) p[a]=b; });
+  const m=new Map(); for(let i=0;i<n;i++){ const r=f(i); (m.get(r)||m.set(r,[]).get(r)).push(i); } return [...m.values()];
 }
-function autoTarget(el){        // nichts gewählt: dort andocken, wo am meisten frei ist (bei Gleichstand das neueste Atom)
-  let best=null, bs=-1;
-  ed.atoms.forEach((s,i)=>{ if(!canBond(i,el)) return; const sc=(freeOf(i)>0?100:0)+(s!=='H'?10:0)+freeOf(i)*2+i*.001; if(sc>bs){ bs=sc; best=i; } });
+const compOf=i=>compsList().find(c=>c.includes(i))||[];
+function subGraph(idx){ const map=new Map(idx.map((v,k)=>[v,k]));
+  return {atoms:idx.map(i=>ed.atoms[i]),bonds:ed.bonds.filter(([a,b])=>map.has(a)&&map.has(b)).map(([a,b,o])=>[map.get(a),map.get(b),o]),map}; }
+function snap(){ edHist.push(JSON.stringify({a:ed.atoms,b:ed.bonds,xy:edXY})); if(edHist.length>200) edHist.shift(); }
+function edReset(){ ed={atoms:[],bonds:[]}; edXY=[]; selAtom=null; focusAtom=null; }
+function warn(t){ const m=$('kit-msg'); m.className='msg warn'; m.textContent=t; }
+function say(t,cls='msg'){ const m=$('kit-msg'); m.className=cls; m.textContent=t; }
+
+/* ---------- Geometrie der Baufläche ---------- */
+const bc=$('bc'), bctx=bc.getContext('2d');
+const AR=25, BL=72, SNAP=90, MAX_BOARD=40;
+const board={s:1,ox:0,oy:0,W:0,H:0,ts:1,tox:0,toy:0};
+const toScr=p=>[board.W/2+board.ox+p[0]*board.s,board.H/2+board.oy+p[1]*board.s];
+const toBrd=(x,y)=>[(x-board.W/2-board.ox)/board.s,(y-board.H/2-board.oy)/board.s];
+function nbAngles(i){ const p=edXY[i], a=[]; ed.bonds.forEach(([x,y])=>{ const o=x===i?y:y===i?x:-1; if(o>=0) a.push(Math.atan2(edXY[o][1]-p[1],edXY[o][0]-p[0])); }); return a; }
+function gapAngles(i,k){
+  if(k<=0) return [];
+  const ang=nbAngles(i).sort((a,b)=>a-b);
+  if(!ang.length) return [...Array(k).keys()].map(j=>(k===1?-Math.PI/2:j*2*Math.PI/k-Math.PI/2));
+  let gaps=ang.map((a,x)=>[a,(x+1<ang.length?ang[x+1]:ang[0]+2*Math.PI)-a]); const out=[];
+  while(out.length<k){ gaps.sort((x,y)=>y[1]-x[1]); const [a,w]=gaps.shift(); const parts=Math.min(k-out.length,Math.max(1,Math.round(w/(Math.PI/2))-0)); const st=w/(parts+1);
+    for(let q=1;q<=parts;q++) out.push(a+st*q); for(let q=0;q<=parts;q++) gaps.push([a+st*q,st]); }
+  return out;
+}
+/* Molekül im Schulbuch-Raster neu anordnen; das Ankeratom bleibt stehen */
+function tidyComp(anchor){
+  const idx=compOf(anchor); if(idx.length<2) return;
+  const g=subGraph(idx), info=idx.map(i=>({pairs:0,rad:Math.max(0,freeOf(i))}));
+  let P3=null; if(g.bonds.length>=g.atoms.length) P3=molLayout(g.atoms,g.bonds,hashStr(wlKey(g.atoms,g.bonds))).map(p=>new THREE.Vector3(...p));
+  const L=layout2D(g,info,hashStr(wlKey(g.atoms,g.bonds)),P3), a0=g.map.get(anchor), base=edXY[anchor];
+  idx.forEach((i,k)=>{ edXY[i]=[base[0]+(L.P[k][0]-L.P[a0][0])*BL,base[1]-(L.P[k][1]-L.P[a0][1])*BL]; });
+  pushApart(idx);
+}
+/* andere Moleküle wegschieben, wenn sich etwas überlappt */
+function pushApart(idx){
+  const set=new Set(idx);
+  compsList().forEach(c=>{ if(c.some(i=>set.has(i))) return;
+    let worst=0, dir=[0,0];
+    c.forEach(i=>idx.forEach(j=>{ const dx=edXY[i][0]-edXY[j][0], dy=edXY[i][1]-edXY[j][1], d=Math.hypot(dx,dy)||1; if(d<AR*3.2&&AR*3.2-d>worst){ worst=AR*3.2-d; dir=[dx/d,dy/d]; } }));
+    if(worst>0) c.forEach(i=>{ edXY[i]=[edXY[i][0]+dir[0]*(worst+10),edXY[i][1]+dir[1]*(worst+10)]; });
+  });
+}
+function placeFree(){
+  const vw=board.W/board.s/2-50, vh=board.H/board.s/2-90;
+  for(let r=0;r<600;r+=26) for(let k=0;k<Math.max(1,Math.round(r/14));k++){ const a=k/Math.max(1,Math.round(r/14))*Math.PI*2+r;
+    const x=Math.cos(a)*r, y=Math.sin(a)*r*.75; if(Math.abs(x)>vw||Math.abs(y)>vh) continue;
+    if(edXY.every(p=>Math.hypot(p[0]-x,p[1]-y)>AR*3.4)) return [x,y]; }
+  return [(Math.random()-.5)*200,(Math.random()-.5)*150];
+}
+function addAt(el,xy){ ed.atoms.push(el); edXY.push(xy); return ed.atoms.length-1; }
+function nearestPartner(i,exclude){
+  let best=null, bd=SNAP;
+  ed.atoms.forEach((s,j)=>{ if(j===i||exclude.has(j)||bonded(i,j)) return; if(!canBond(j,ed.atoms[i])||!canBond(i,s)) return;
+    const d=Math.hypot(edXY[j][0]-edXY[i][0],edXY[j][1]-edXY[i][1]); if(d<bd){ bd=d; best=j; } });
   return best;
 }
-function warn(t){ const m=$('kit-msg'); m.className='msg warn'; m.textContent=t; }
-
-const kit=$('kit');
-KIT.forEach(el=>{ const b=document.createElement('button'), col=new THREE.Color(CPK[el][0]);
-  b.style.background=CPK[el][0]; b.dataset.el=el; if(col.r*.3+col.g*.59+col.b*.11<.5) b.style.color='#fff';
-  b.innerHTML=el+'<span hidden></span>'; b.title=ELS[el].name; b.setAttribute('aria-label',ELS[el].name+' hinzufügen');
-  b.onclick=()=>addAtom(el); kit.appendChild(b); });
-
-function addAtom(el){
-  const n=ed.atoms.length; if(n>=MAX_ATOMS) return;
-  let p=null;
-  if(n){
-    if(edSel!=null){
-      if(!canBond(edSel,el)){ warn(`${atomName(edSel)} hat keine freie Bindung mehr. Tippe ein anderes Atom an – oder eine Bindung, um sie zu ändern.`); return; }
-      p=edSel;
-    } else { p=autoTarget(el); if(p==null){ warn('Nirgends ist mehr Platz frei. Entferne ein Atom oder mach aus einer Doppel- eine Einfachbindung.'); return; } }
-  }
-  snap(); ed.atoms.push(el); const i=ed.atoms.length-1;
-  if(p!=null){ ed.bonds.push([p,i,1]); edPos.push(nearPos(p)); } else edPos.push([0,0,0]);
-  connectMode=false; refreshLab();
+let jumps=[], flashes=[];
+function makeBond(a,b){        // a und b verbinden, Molekül von a an b heranziehen
+  if(!canBond(a,ed.atoms[b])||!canBond(b,ed.atoms[a])) return false;
+  const sameComp=compOf(a).includes(b);
+  if(!sameComp){ const ang=gapAngles(b,1)[0], tx=edXY[b][0]+Math.cos(ang)*BL, ty=edXY[b][1]+Math.sin(ang)*BL, dx=tx-edXY[a][0], dy=ty-edXY[a][1];
+    compOf(a).forEach(i=>{ edXY[i]=[edXY[i][0]+dx,edXY[i][1]+dy]; }); }
+  ed.bonds.push([a,b,1]);
+  if(bondKind(ed.atoms[a],ed.atoms[b])==='ion'){ const m=METAL.has(ed.atoms[a])?a:b; jumps.push({from:m,to:m===a?b:a,t:0}); }
+  tidyComp(b); return true;
 }
-function removeAtom(i){
-  snap(); ed.bonds=ed.bonds.filter(([a,b])=>a!==i&&b!==i).map(([a,b,o])=>[a>i?a-1:a,b>i?b-1:b,o]);
-  ed.atoms.splice(i,1); edPos.splice(i,1); edSel=null; connectMode=false; refreshLab();
+function cutBond(k){
+  snap(); const [a,b]=ed.bonds[k]; ed.bonds.splice(k,1);
+  const ca=compOf(a); if(!ca.includes(b)){ const cb=compOf(b), small=cb.length<=ca.length?cb:ca, other=small===cb?a:b, me=small===cb?b:a;
+    const dx=edXY[me][0]-edXY[other][0], dy=edXY[me][1]-edXY[other][1], d=Math.hypot(dx,dy)||1;
+    small.forEach(i=>{ edXY[i]=[edXY[i][0]+dx/d*45,edXY[i][1]+dy/d*45]; }); }
+  selAtom=null; refreshLab(); say('✂ Bindung getrennt.');
 }
 function cycleBond(k){
   const [i,j,o]=ed.bonds[k], kd=kindOf(ed.bonds[k]);
-  if(kd==='met'){ edSel=null; refreshSel(); $('kit-sel').textContent='ℹ '+bondInfoText(k); return; }
+  if(kd==='met'){ $('kit-sel').textContent='ℹ '+bondInfoText(k); return; }
   const room=usedOf(i)<maxVal(ed.atoms[i])&&usedOf(j)<maxVal(ed.atoms[j]), no=o<3&&room?o+1:1;
-  if(no===o){ warn(ed.atoms[i]==='H'||ed.atoms[j]==='H'?(kd==='ion'?'Wasserstoff nimmt nur ein Elektron auf.':'Wasserstoff kann nur eine Einfachbindung eingehen.'):kd==='ion'?'Mehr Elektronen kann hier keines der beiden Atome abgeben oder aufnehmen.':'Diese Bindung lässt sich nicht verstärken – ein Atom hat keine freie Bindung mehr.'); $('kit-sel').textContent='ℹ '+bondInfoText(k); return; }
-  snap(); ed.bonds[k][2]=no; edSel=null; refreshLab(); $('kit-sel').textContent='ℹ '+bondInfoText(k);
+  if(no===o){ warn(ed.atoms[i]==='H'||ed.atoms[j]==='H'?'Wasserstoff hat nur ein Elektron – mehr als eine Einfachbindung geht nicht.':kd==='ion'?'Mehr Elektronen kann hier keines der beiden Atome abgeben oder aufnehmen.':'Mehr geht nicht: Eines der beiden Atome hat keine freien Elektronen mehr.'); return; }
+  snap(); ed.bonds[k][2]=no; if(kd==='ion'&&no>o){ const m=METAL.has(ed.atoms[i])?i:j; jumps.push({from:m,to:m===i?j:i,t:0}); }
+  tidyComp(i); refreshLab(); $('kit-sel').textContent='ℹ '+bondInfoText(k);
 }
-function connectAtoms(i,j){
-  if(ed.bonds.some(([a,b])=>(a===i&&b===j)||(a===j&&b===i))){ warn('Die beiden sind schon verbunden. Tippe auf die Bindung, um sie zu ändern.'); return; }
-  if(!canBond(i,ed.atoms[j])||!canBond(j,ed.atoms[i])){ warn('Eines der beiden Atome hat keine freie Bindung mehr.'); return; }
-  snap(); ed.bonds.push([i,j,1]); connectMode=false; edSel=null; refreshLab();
+function supplyLeft(el){ if(labMode!=='level'||!lvl) return Infinity; return (lvl.supply[el]||0)-(tray[el]||0)-(lvl.collected[el]||0); }
+function tapAdd(el){
+  if(ed.atoms.length>=MAX_BOARD){ warn(`Höchstens ${MAX_BOARD} Atome auf der Fläche.`); return; }
+  if(supplyLeft(el)<=0){ warn(`Keine ${ELS[el].name}-Atome mehr übrig.`); return; }
+  if(selAtom!=null){
+    if(!canBond(selAtom,el)){ warn(`${atomName(selAtom)} hat keine freien Elektronen mehr. Tippe ein anderes Atom an.`); return; }
+    snap(); const ang=gapAngles(selAtom,1)[0], i=addAt(el,[edXY[selAtom][0]+Math.cos(ang)*BL,edXY[selAtom][1]+Math.sin(ang)*BL]);
+    makeBond(i,selAtom); focusAtom=i; refreshLab(); return; }
+  snap(); const i=addAt(el,placeFree()); focusAtom=i; refreshLab();
+}
+function dropAdd(el,xy){
+  if(ed.atoms.length>=MAX_BOARD){ warn(`Höchstens ${MAX_BOARD} Atome auf der Fläche.`); return; }
+  if(supplyLeft(el)<=0){ warn(`Keine ${ELS[el].name}-Atome mehr übrig.`); return; }
+  snap(); const i=addAt(el,xy), p=nearestPartner(i,new Set([i])); if(p!=null) makeBond(i,p); else pushApart([i]);
+  focusAtom=i; refreshLab();
+}
+function removeAtom(i){
+  snap(); ed.bonds=ed.bonds.filter(([a,b])=>a!==i&&b!==i).map(([a,b,o])=>[a>i?a-1:a,b>i?b-1:b,o]);
+  ed.atoms.splice(i,1); edXY.splice(i,1); selAtom=null; focusAtom=null; refreshLab();
+}
+function removeComp(idx){
+  snap(); const set=new Set(idx), keep=ed.atoms.map((_,i)=>!set.has(i)), map=[]; let k=0; keep.forEach((v,i)=>{ if(v) map[i]=k++; });
+  ed.bonds=ed.bonds.filter(([a,b])=>keep[a]&&keep[b]).map(([a,b,o])=>[map[a],map[b],o]);
+  ed.atoms=ed.atoms.filter((_,i)=>keep[i]); edXY=edXY.filter((_,i)=>keep[i]); selAtom=null; focusAtom=null;
 }
 function fillH(){
-  const add=[]; ed.atoms.forEach((s,i)=>{ if(s==='H'||METAL.has(s)) return; for(let k=0;k<freeOf(i);k++) add.push(i); });
-  if(!add.length){ warn('Keine freien Bindungen zum Auffüllen.'); return; }
-  if(ed.atoms.length+add.length>MAX_ATOMS){ warn(`Das wären mehr als ${MAX_ATOMS} Atome.`); return; }
-  snap(); add.forEach(p=>{ ed.atoms.push('H'); const i=ed.atoms.length-1; ed.bonds.push([p,i,1]); edPos.push(nearPos(p)); });
-  edSel=null; connectMode=false; refreshLab();
+  const target=selAtom!=null?compOf(selAtom):ed.atoms.map((_,i)=>i), add=[];
+  target.forEach(i=>{ const s=ed.atoms[i]; if(s==='H'||METAL.has(s)) return; for(let k=0;k<freeOf(i);k++) add.push(i); });
+  if(!add.length){ warn('Hier gibt es keine freien Elektronen zum Auffüllen.'); return; }
+  if(labMode==='level'&&supplyLeft('H')<add.length){ warn('Dafür reichen die H-Atome im Vorrat nicht.'); return; }
+  if(ed.atoms.length+add.length>MAX_BOARD){ warn(`Das wären mehr als ${MAX_BOARD} Atome.`); return; }
+  snap(); const anchors=new Set();
+  add.forEach(p=>{ const ang=gapAngles(p,1)[0], i=addAt('H',[edXY[p][0]+Math.cos(ang)*BL,edXY[p][1]+Math.sin(ang)*BL]); ed.bonds.push([p,i,1]); anchors.add(p); });
+  const done=new Set(); anchors.forEach(a=>{ const c=compOf(a); if(c.some(x=>done.has(x))) return; c.forEach(x=>done.add(x)); tidyComp(a); });
+  refreshLab();
 }
-function setGraph(atoms,bonds,pos){
-  if(ed.atoms.length) snap();
-  ed={atoms:atoms.slice(),bonds:bonds.map(([i,j,o])=>[i,j,Math.max(1,o)])}; edPos=pos?pos.map(p=>p.slice()):[];
-  edSel=null; connectMode=false; edCamKept=false; refreshLab();
+/* ein Molekül (Graph) als neues Molekül aufs Feld setzen */
+function setGraph(atoms,bonds){
+  snap(); const c=placeFree(), base=ed.atoms.length;
+  atoms.forEach((a,k)=>addAt(a,[c[0]+k*.01,c[1]]));
+  bonds.forEach(([i,j,o])=>ed.bonds.push([base+i,base+j,Math.max(1,o)]));
+  tidyComp(base);
+  const idx=compOf(base), xs=idx.map(i=>edXY[i][0]), ys=idx.map(i=>edXY[i][1]), dx=c[0]-(Math.min(...xs)+Math.max(...xs))/2, dy=c[1]-(Math.min(...ys)+Math.max(...ys))/2;
+  idx.forEach(i=>{ edXY[i]=[edXY[i][0]+dx,edXY[i][1]+dy]; }); pushApart(idx);
+  selAtom=null; focusAtom=base; refreshLab();
 }
-$('kit-undo').onclick=()=>{ const s=edHist.pop(); if(!s) return; const o=JSON.parse(s); ed={atoms:o.a,bonds:o.b}; edPos=o.p; edSel=o.s; connectMode=false; refreshLab(); };
-$('kit-clear').onclick=()=>{ if(!ed.atoms.length) return; snap(); edReset(); refreshLab(); };
-$('kit-del').onclick=()=>{ if(edSel!=null) removeAtom(edSel); };
-$('kit-fill').onclick=fillH;
-$('kit-link').onclick=()=>{ if(edSel==null) return; connectMode=!connectMode; refreshSel(); };
-$('kit-tip').onclick=()=>{
-  const rest=MOLS.filter(m=>!found.has(m.id)).sort((a,b)=>atomTotal(a.counts)-atomTotal(b.counts)), msg=$('kit-msg');
-  if(!rest.length){ msg.className='msg ok'; msg.textContent='Du hast alle Moleküle entdeckt – stark!'; return; }
-  const m=rest[Math.floor(Math.random()*Math.min(5,rest.length))];
-  msg.className='msg'; msg.textContent=`💡 Versuch mal: ${countList(m.counts)}`;
-};
 
-/* Atome und Bindungen im 3D-Bild antippen */
-const mRay=new THREE.Raycaster(); let mDown=null;
-mc.addEventListener('pointerdown',e=>{ mDown={x:e.clientX,y:e.clientY}; });
-mc.addEventListener('pointerup',e=>{
-  if(!mDown) return; const moved=Math.hypot(e.clientX-mDown.x,e.clientY-mDown.y); mDown=null;
-  if(moved>6||labMode!=='build'||!molObj||!molGeom||!molGeom.pick) return;
-  const r=mc.getBoundingClientRect(); mRay.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),mCam);
-  const hit=mRay.intersectObjects(molObj.children,false).find(h=>h.object.visible&&!h.object.isSprite&&(h.object.userData.atom!=null||h.object.userData.bond!=null));
-  if(!hit){ if(edSel!=null){ edSel=null; connectMode=false; refreshSel(); } return; }
-  const u=hit.object.userData;
-  if(u.atom!=null){ if(connectMode&&edSel!=null&&u.atom!==edSel) connectAtoms(edSel,u.atom); else { edSel=edSel===u.atom?null:u.atom; connectMode=false; refreshSel(); } }
-  else cycleBond(u.bond);
+/* ---------- Baukasten-Knöpfe: antippen oder ins Feld ziehen ---------- */
+const kit=$('kit');
+let kitDrag=null, ghost=null;
+KIT.forEach(el=>{ const b=document.createElement('button'), col=new THREE.Color(CPK[el][0]);
+  b.style.background=CPK[el][0]; b.dataset.el=el; if(col.r*.3+col.g*.59+col.b*.11<.5) b.style.color='#fff';
+  b.innerHTML=el+'<span hidden></span>'; b.title=ELS[el].name+' – ins Feld ziehen oder antippen'; b.setAttribute('aria-label',ELS[el].name+' hinzufügen');
+  b.addEventListener('pointerdown',ev=>{ if(b.disabled) return; ev.preventDefault(); kitDrag={el,x0:ev.clientX,y0:ev.clientY,moved:false}; });
+  b.onclick=ev=>{ if(ev.detail===0) tapAdd(el); };             // Tastatur
+  kit.appendChild(b); });
+addEventListener('pointermove',ev=>{
+  if(!kitDrag) return;
+  if(!kitDrag.moved&&Math.hypot(ev.clientX-kitDrag.x0,ev.clientY-kitDrag.y0)>7){ kitDrag.moved=true;
+    ghost=document.createElement('div'); ghost.className='kit-ghost'; ghost.textContent=kitDrag.el; ghost.style.background=CPK[kitDrag.el][0];
+    const c=new THREE.Color(CPK[kitDrag.el][0]); ghost.style.color=c.r*.3+c.g*.59+c.b*.11<.5?'#fff':'#0a0d13'; document.body.appendChild(ghost); }
+  if(ghost){ ghost.style.left=ev.clientX+'px'; ghost.style.top=ev.clientY+'px'; }
 });
-function refreshSel(){
-  if(selMesh){ selMesh.parent&&selMesh.parent.remove(selMesh); selMesh.material.dispose(); selMesh=null; }
-  if(edSel!=null&&edSel>=ed.atoms.length) edSel=null;
-  if(edSel!=null&&molObj&&molGeom&&molGeom.pick&&molGeom.P[edSel]){
-    selMesh=new THREE.Mesh(ball,new THREE.MeshBasicMaterial({color:0x5fd4f4,transparent:true,opacity:.35,depthWrite:false}));
-    selMesh.scale.setScalar(molGeom.sizes[edSel]*1.5+.1); selMesh.position.copy(molGeom.P[edSel]); molObj.add(selMesh);
+addEventListener('pointerup',ev=>{
+  if(!kitDrag) return; const k=kitDrag; kitDrag=null; if(ghost){ ghost.remove(); ghost=null; }
+  if(!k.moved){ tapAdd(k.el); return; }
+  const r=bc.getBoundingClientRect();
+  if(!bc.hidden&&ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom) dropAdd(k.el,toBrd(ev.clientX-r.left,ev.clientY-r.top));
+});
+addEventListener('pointercancel',()=>{ kitDrag=null; if(ghost){ ghost.remove(); ghost=null; } });
+
+/* ---------- Auf der Fläche: ziehen, antippen ---------- */
+let drag=null, hoverPair=null, pills=[], scissors=[];
+const hitAtom=(x,y)=>{ let best=null, bd=AR+8; ed.atoms.forEach((_,i)=>{ const d=Math.hypot(edXY[i][0]-x,edXY[i][1]-y); if(d<bd){ bd=d; best=i; } }); return best; };
+function hitBond(x,y){ let best=null, bd=10/board.s+4;
+  ed.bonds.forEach(([a,b],k)=>{ const A=edXY[a], B=edXY[b], dx=B[0]-A[0], dy=B[1]-A[1], L2=dx*dx+dy*dy||1, t=Math.max(.15,Math.min(.85,((x-A[0])*dx+(y-A[1])*dy)/L2));
+    const d=Math.hypot(A[0]+dx*t-x,A[1]+dy*t-y); if(d<bd){ bd=d; best=k; } }); return best; }
+bc.addEventListener('pointerdown',e=>{
+  const r=bc.getBoundingClientRect(), sx=e.clientX-r.left, sy=e.clientY-r.top, [x,y]=toBrd(sx,sy);
+  const pill=pills.find(p=>sx>=p.x&&sx<=p.x+p.w&&sy>=p.y&&sy<=p.y+p.h); if(pill){ open3D(pill.idx); return; }
+  const sc=scissors.find(s=>Math.hypot(s.x-sx,s.y-sy)<14); if(sc){ cutBond(sc.k); return; }
+  const i=hitAtom(x,y);
+  if(i!=null){ bc.setPointerCapture(e.pointerId); drag={i,comp:compOf(i),x0:e.clientX,y0:e.clientY,start:edXY.map(p=>p.slice()),moved:false,snapshot:JSON.stringify({a:ed.atoms,b:ed.bonds,xy:edXY})}; return; }
+  const k=hitBond(x,y); if(k!=null){ cycleBond(k); return; }
+  if(selAtom!=null){ selAtom=null; refreshSel(); }
+});
+bc.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)>5) drag.moved=true;
+  if(!drag.moved) return;
+  const dx=(e.clientX-drag.x0)/board.s, dy=(e.clientY-drag.y0)/board.s;
+  drag.comp.forEach(i=>{ edXY[i]=[drag.start[i][0]+dx,drag.start[i][1]+dy]; });
+  const set=new Set(drag.comp); hoverPair=null; let bd=SNAP;
+  drag.comp.forEach(a=>{ ed.atoms.forEach((s,b)=>{ if(set.has(b)||!canBond(a,s)||!canBond(b,ed.atoms[a])) return;
+    const d=Math.hypot(edXY[a][0]-edXY[b][0],edXY[a][1]-edXY[b][1]); if(d<bd){ bd=d; hoverPair=[a,b]; } }); });
+  const kr=$('kit').getBoundingClientRect(); drag.overKit=e.clientX>=kr.left&&e.clientX<=kr.right&&e.clientY>=kr.top-10&&e.clientY<=kr.bottom+10;
+});
+bc.addEventListener('pointerup',e=>{
+  if(!drag) return; const d=drag; drag=null; const hp=hoverPair; hoverPair=null;
+  if(!d.moved){ tapAtom(d.i); return; }
+  if(d.overKit){ edHist.push(d.snapshot); removeComp(d.comp); refreshLab(); say('Zurück in den Baukasten gelegt.'); return; }
+  edHist.push(d.snapshot);
+  if(hp&&makeBond(hp[0],hp[1])){ focusAtom=hp[0]; refreshLab(); return; }
+  pushApart(d.comp); refreshLab();
+});
+function tapAtom(i){
+  if(selAtom!=null&&selAtom!==i){
+    if(!bonded(selAtom,i)&&canBond(selAtom,ed.atoms[i])&&canBond(i,ed.atoms[selAtom])){ snap(); const a=i, b=selAtom; makeBond(a,b); selAtom=null; focusAtom=a; refreshLab(); say('Verbunden!'); return; }
+    if(bonded(selAtom,i)){ selAtom=i; focusAtom=i; refreshLab(); return; }
+    warn('Diese beiden lassen sich nicht verbinden – einem fehlen freie Elektronen (Punkte).'); selAtom=i; focusAtom=i; refreshLab(); return;
   }
+  selAtom=selAtom===i?null:i; focusAtom=i; refreshLab();
+}
+
+/* ---------- Zeichnen ---------- */
+function rrect(x,X,Y,w,h,r){ x.beginPath(); x.moveTo(X+r,Y); x.arcTo(X+w,Y,X+w,Y+h,r); x.arcTo(X+w,Y+h,X,Y+h,r); x.arcTo(X,Y+h,X,Y,r); x.arcTo(X,Y,X+w,Y,r); x.closePath(); }
+let boardT=0;
+function drawBoard(dt){
+  boardT+=dt;
+  const W=bc.clientWidth, H=bc.clientHeight, dpr=Math.min(devicePixelRatio,2); if(!W||!H) return;
+  if(bc.width!==Math.round(W*dpr)||bc.height!==Math.round(H*dpr)){ bc.width=Math.round(W*dpr); bc.height=Math.round(H*dpr); }
+  board.W=W; board.H=H;
+  // automatisch so zoomen, dass alles sichtbar ist (nicht während des Ziehens)
+  if(!drag&&edXY.length){ const xs=edXY.map(p=>p[0]), ys=edXY.map(p=>p[1]), x0=Math.min(...xs)-AR-30, x1=Math.max(...xs)+AR+30, y0=Math.min(...ys)-AR-48, y1=Math.max(...ys)+AR+26;
+    const aw=W-30, ah=H-150, s=Math.min(1,aw/(x1-x0),ah/(y1-y0)); board.ts=s;
+    const cx=(x0+x1)/2, cy=(y0+y1)/2; board.tox=s<1||Math.abs(cx)*s>aw/2-(x1-x0)*s/2?-cx*s:0; board.toy=s<1||Math.abs(cy)*s>ah/2-(y1-y0)*s/2?-cy*s-10:0; }
+  else if(!edXY.length){ board.ts=1; board.tox=0; board.toy=0; }
+  const k=Math.min(1,dt*6); board.s+=(board.ts-board.s)*k; board.ox+=(board.tox-board.ox)*k; board.oy+=(board.toy-board.oy)*k;
+  const x=bctx; x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H);
+  // Punkteraster
+  x.fillStyle='#1d2638'; for(let gx=12;gx<W;gx+=28) for(let gy=12;gy<H;gy+=28) x.fillRect(gx,gy,1.5,1.5);
+  pills=[]; scissors=[];
+  if(!ed.atoms.length){ x.fillStyle='#5a6478'; x.textAlign='center'; x.font='600 16px Inter, sans-serif'; x.fillText('Zieh Atome aus dem Baukasten hierher',W/2,H/2-10);
+    x.font='400 13px Inter, sans-serif'; x.fillText('oder tippe sie einfach an  →',W/2,H/2+14); drawLevelGhost(x,W,H); return; }
+  const s=board.s, P=edXY.map(toScr), R=AR*s;
+  // Bindungen
+  ed.bonds.forEach(([a,b,o],kk)=>{ const [x1,y1]=P[a],[x2,y2]=P[b], dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L, kd=bondKind(ed.atoms[a],ed.atoms[b]);
+    x.lineCap='round';
+    if(kd!=='cov'){ x.setLineDash(kd==='ion'?[4,6]:[2,5]); x.strokeStyle=kd==='ion'?'#6b7690':'#3f8fae'; x.lineWidth=2; x.beginPath(); x.moveTo(x1+ux*R,y1+uy*R); x.lineTo(x2-ux*R,y2-uy*R); x.stroke(); x.setLineDash([]); }
+    else { const offs=o===1?[0]:o===2?[-4,4]:[-7,0,7]; x.strokeStyle='#d6dce8'; x.lineWidth=3.2*Math.max(.7,s);
+      offs.forEach(off=>{ x.beginPath(); x.moveTo(x1+ux*R*.8-uy*off*s,y1+uy*R*.8+ux*off*s); x.lineTo(x2-ux*R*.8-uy*off*s,y2-uy*R*.8+ux*off*s); x.stroke(); }); }
+    if(selAtom!=null&&(a===selAtom||b===selAtom)){ const mx=(x1+x2)/2, my=(y1+y2)/2; scissors.push({x:mx,y:my,k:kk});
+      x.fillStyle='#ffd23f'; x.beginPath(); x.arc(mx,my,11,0,Math.PI*2); x.fill(); x.fillStyle='#0a0d13'; x.font='700 13px Inter, sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText('✂',mx,my+1); }
+  });
+  // Vorschau beim Ziehen
+  if(hoverPair){ const [a,b]=hoverPair; x.setLineDash([5,5]); x.strokeStyle='#ffd23f'; x.lineWidth=2.5; x.beginPath(); x.moveTo(...P[a]); x.lineTo(...P[b]); x.stroke(); x.setLineDash([]);
+    x.strokeStyle='rgba(255,210,63,.7)'; x.lineWidth=3; x.beginPath(); x.arc(P[b][0],P[b][1],R+6,0,Math.PI*2); x.stroke(); }
+  // Atome
+  x.textAlign='center'; x.textBaseline='middle';
+  ed.atoms.forEach((el,i)=>{ const [px,py]=P[i], col=CPK[el][0], q=boardCharges[i]||0, rr=R*(q>0?.82:q<0?1.12:1);
+    if(i===selAtom){ x.fillStyle='rgba(95,212,244,.25)'; x.beginPath(); x.arc(px,py,rr+9,0,Math.PI*2); x.fill(); x.strokeStyle='#5fd4f4'; x.lineWidth=2; x.stroke(); }
+    const g=x.createRadialGradient(px-rr*.35,py-rr*.35,rr*.1,px,py,rr); g.addColorStop(0,'#ffffff'); g.addColorStop(.3,col); g.addColorStop(1,new THREE.Color(col).multiplyScalar(.55).getStyle());
+    x.fillStyle=g; x.beginPath(); x.arc(px,py,rr,0,Math.PI*2); x.fill();
+    const c=new THREE.Color(col); x.fillStyle=c.r*.3+c.g*.59+c.b*.11<.5?'#ffffff':'#0a0d13'; x.font=`700 ${Math.round(15*Math.max(.75,s))}px "Space Grotesk", sans-serif`; x.fillText(el,px,py+1);
+    if(q){ x.font=`700 ${Math.round(12*Math.max(.8,s))}px Inter, sans-serif`; x.fillStyle=q>0?'#8cc8ff':'#ff8a8a'; x.fillText(chargeTxt(q),px+rr*.95,py-rr*.9); }
+    // freie Elektronen als Punkte
+    const f=freeOf(i); if(f>0){ const angs=gapAngles(i,f), pulse=1+Math.sin(boardT*4+i)*.12;
+      angs.forEach(a=>{ const ex=px+Math.cos(a)*(rr+8), ey=py+Math.sin(a)*(rr+8); x.fillStyle=METAL.has(el)?'#ffd23f':'#ffffff'; x.shadowColor=x.fillStyle; x.shadowBlur=8;
+        x.beginPath(); x.arc(ex,ey,4*pulse*Math.max(.8,s),0,Math.PI*2); x.fill(); x.shadowBlur=0; }); }
+  });
+  // springende Elektronen (Ionenbindung)
+  jumps=jumps.filter(j=>{ j.t+=dt; const f=Math.min(1,j.t/.7); if(!P[j.from]||!P[j.to]) return false; const [ax,ay]=P[j.from],[bx,by]=P[j.to];
+    const ex=ax+(bx-ax)*f, ey=ay+(by-ay)*f-Math.sin(f*Math.PI)*30; x.fillStyle='#ffd23f'; x.shadowColor='#ffd23f'; x.shadowBlur=12; x.beginPath(); x.arc(ex,ey,5,0,Math.PI*2); x.fill(); x.shadowBlur=0; return f<1; });
+  // Beschriftung über jedem Molekül
+  compInfos.forEach(ci=>{ const pts=ci.idx.map(i=>P[i]); if(pts.some(p=>!p)) return;
+    const minY=Math.min(...pts.map(p=>p[1])), cx=(Math.min(...pts.map(p=>p[0]))+Math.max(...pts.map(p=>p[0])))/2;
+    let t, col;
+    if(ci.match){ t=`✓ ${ci.known?ci.known.name:ci.formula} – passt!`; col='#6be3a0'; }
+    else if(ci.valid&&ci.known){ t=`✓ ${ci.known.name} · ${ci.known.f}`; col='#6be3a0'; }
+    else if(ci.valid&&ci.allMetal){ t=`✓ Metall · ${ci.formula}`; col='#6be3a0'; }
+    else if(ci.valid){ t=`✓ ${ci.formula}${ci.isomerOf?' · Isomer von '+ci.isomerOf.name:''}`; col='#cfe9dc'; }
+    else { t=`${ci.formula}${ci.open?` · noch ${ci.open} frei`:''}`; col='#8c96aa'; }
+    x.font='600 12.5px Inter, sans-serif'; const tw=x.measureText(t).width, show3d=ci.idx.length>=2, pw=show3d?30:0, w=tw+18+pw, h=22, X=cx-w/2, Y=minY-R-34;
+    x.fillStyle='rgba(10,13,19,.78)'; rrect(x,X,Y,w,h,11); x.fill(); x.strokeStyle=ci.valid?'rgba(107,227,160,.5)':'#273044'; x.lineWidth=1; x.stroke();
+    x.fillStyle=col; x.textAlign='left'; x.fillText(t,X+9,Y+h/2+1);
+    if(show3d){ const bx=X+w-pw-2; x.fillStyle='#e8ecf3'; rrect(x,bx,Y+3,pw-2,h-6,7); x.fill(); x.fillStyle='#0a0d13'; x.font='700 10.5px Inter, sans-serif'; x.textAlign='center'; x.fillText('3D',bx+(pw-2)/2,Y+h/2+1); pills.push({x:bx,y:Y+3,w:pw-2,h:h-6,idx:ci.idx}); }
+  });
+  flashes=flashes.filter(f=>{ f.t+=dt; x.globalAlpha=Math.max(0,1-f.t/1.2); x.fillStyle='#6be3a0'; x.font='700 18px Inter, sans-serif'; x.textAlign='center'; x.fillText(f.txt,f.x,f.y-f.t*30); x.globalAlpha=1; return f.t<1.2; });
+  drawLevelGhost(x,W,H);
+}
+
+/* ---------- Zustand auswerten ---------- */
+function refreshLab(){
+  tray=countsOf(ed.atoms); const n=ed.atoms.length;
+  [...kit.children].forEach(b=>{ const el=b.dataset.el, sp=b.querySelector('span');
+    if(labMode==='level'&&lvl){ const left=supplyLeft(el), inLvl=(lvl.supply[el]||0)>0; b.hidden=!inLvl; sp.hidden=!inLvl; sp.textContent=Math.max(0,left); b.disabled=left<=0; }
+    else { b.hidden=false; sp.hidden=!tray[el]; sp.textContent=tray[el]||''; b.disabled=n>=MAX_BOARD; } });
+  if(selAtom!=null&&selAtom>=n) selAtom=null; if(focusAtom!=null&&focusAtom>=n) focusAtom=null;
+  const free=ed.atoms.map((_,i)=>freeOf(i));
+  boardCharges=n?lewisInfo(ed,free).map((f,i)=>hasKind(i,'ion')?f.charge:0):[];
+  compInfos=compsList().map(idx=>{ const g=subGraph(idx), c=countsOf(g.atoms), fr=idx.map(i=>free[i]), open=fr.reduce((a,b)=>a+b,0), valid=idx.length>=2&&open===0;
+    const mk=valid?matchKnown(g.atoms,g.bonds,c):{known:null,isomerOf:null};
+    return {idx,g,counts:c,free:fr,open,valid,known:mk.known,isomerOf:mk.isomerOf,key:wlKey(g.atoms,g.bonds),formula:mk.known?mk.known.f:formulaOf(c),allMetal:g.atoms.every(a=>METAL.has(a)),match:null}; });
+  // Entdeckungen, Isomere, Abzeichen
+  const news=[]; let ch=false;
+  compInfos.forEach(ci=>{ if(!ci.valid) return;
+    if(ci.known&&!found.has(ci.known.id)){ found.add(ci.known.id); news.push(ci.known.name); }
+    if(!ci.g.atoms.some(a=>METAL.has(a))&&recordIsomer(ci.counts,ci.key)) news.push('eine neue Anordnung von '+ci.formula);
+    if(!stats.ring&&!ci.allMetal&&ringCount(ci.g)>0){ stats.ring=1; ch=true; }
+    if(!stats.triple&&ci.g.bonds.some(([i,j,o])=>o===3&&bondKind(ci.g.atoms[i],ci.g.atoms[j])==='cov')){ stats.triple=1; ch=true; }
+    if(!stats.metal&&ci.allMetal){ stats.metal=1; ch=true; } });
+  if(news.length) saveFound(); if(ch) saveStats();
+  // Fokus-Molekül: ausgewähltes oder zuletzt bearbeitetes
+  const fa=selAtom??focusAtom, fc=compInfos.find(c=>c.idx.includes(fa))||compInfos[compInfos.length-1]||null;
+  lab=fc?{atoms:fc.g.atoms,bonds:fc.g.bonds,free:fc.free,valid:fc.valid,known:fc.known,key:fc.key,lattice:false,idx:fc.idx}:null;
+  molCur=fc&&fc.known||null;
+  if(labMode==='level') levelCheck();
+  else {
+    if(!fc) setPanel({name:'Molekül-Labor',desc:`<div class="label">So geht's</div><b>Zieh</b> ein Atom aus dem Baukasten aufs Feld (oder tippe es an). Die <b>Punkte</b> am Atom sind freie Elektronen. Zieh ein zweites Atom nah heran – haben beide Punkte frei, verbinden sie sich. Fertig ist ein Molekül, wenn <b>keine Punkte mehr übrig</b> sind.`});
+    else if(fc.valid&&fc.known) setPanel(knownPanel(fc.known));
+    else if(fc.valid&&fc.allMetal) setPanel({name:(Object.keys(fc.counts).length>1?'Legierung':ELS[fc.g.atoms[0]].name+' (Metall)'),f:fc.formula,
+      desc:`<div class="label">Metallbindung</div>Metallatome geben ihre Aussenelektronen in einen gemeinsamen «See» ab. Die positiven Atomrümpfe halten in diesem Elektronengas zusammen – darum leiten Metalle Strom und lassen sich verformen.`,facts:[['Bindungen',bondFacts(fc.g.atoms,fc.g.bonds)]]});
+    else if(fc.valid) setPanel({name:fc.isomerOf?'Isomer von '+fc.isomerOf.name:'Eigenes Molekül',f:fc.formula,
+      desc:fc.isomerOf?`<div class="label">Isomer</div>Du hast dieselben Atome wie bei <b>${fc.isomerOf.name}</b> (${fc.isomerOf.f}) verwendet, aber anders verknüpft. Solche Moleküle heissen Isomere.`:`<div class="label">Selbst gebaut</div>Alle Elektronen sind gebunden – ein chemisch mögliches Molekül, das nicht in der Sammlung steht.`,
+      facts:[['Bindungen',bondFacts(fc.g.atoms,fc.g.bonds)],['Atome',countList(fc.counts)],['Molare Masse',fmtMolMass(fc.counts)]]});
+    else setPanel({name:'Im Bau …',f:fc.formula,facts:[['Atome',countList(fc.counts)],['Freie Elektronen',fc.open]]});
+    if(news.length) say(`🎉 Neu entdeckt: ${news.join(', ')}!`,'msg new');
+    else if(!fc) say('Das Feld ist leer.');
+    else if(fc.valid&&fc.known) say(`Fertig: ${fc.known.name} (${fc.known.f}) ✓`,'msg ok');
+    else if(fc.valid) say('Fertig – alle Elektronen sind gebunden ✓','msg ok');
+    else if(fc.idx.length===1&&METAL.has(fc.g.atoms[0])) say(`${ELS[fc.g.atoms[0]].name} ist ein Metall: Leg es neben ein Nichtmetall (Ionenbindung) oder neben ein Metall (Metallbindung).`);
+    else say(`Noch ${fc.open} freie${fc.open===1?'s':''} Elektron${fc.open===1?'':'en'} (Punkte). Zieh passende Atome heran – oder tippe «H auffüllen».`);
+  }
+  renderList(); refreshSel(); checkBadges(); if(!viewerOn) showStage();
+  $('kit-3d').disabled=!fc||fc.idx.length<2; $('kit-iso').disabled=!fc||fc.idx.length<2;
+}
+function refreshSel(){
   const n=ed.atoms.length, s=$('kit-sel');
-  if(edSel!=null){ const f=freeOf(edSel);
-    s.textContent=connectMode?`⤳ Verbinden: Tippe jetzt das Atom an, das mit ${atomName(edSel)} verbunden werden soll.`
-      :`▸ Gewählt: ${atomName(edSel)} · ${f} freie Bindung${f===1?'':'en'}. Neue Atome docken hier an. Nochmal antippen = abwählen.`; }
-  else s.textContent=n?'Tipp: Tippe im Bild auf ein Atom, um zu wählen, wo das nächste andockt. Eine Bindung antippen = Einfach → Doppel → Dreifach.':'';
-  $('kit-del').disabled=edSel==null; $('kit-link').disabled=edSel==null; $('kit-link').setAttribute('aria-pressed',connectMode);
+  if(selAtom!=null){ const f=freeOf(selAtom);
+    s.textContent=`▸ ${atomName(selAtom)} gewählt (${f} frei). Atom im Baukasten antippen = hier andocken · anderes Atom antippen = verbinden · ✂ = Bindung trennen.`; }
+  else s.textContent=n?'Tipp: Bindung antippen = doppelt/dreifach · Atom antippen = auswählen · Molekül zurück auf den Baukasten ziehen = wegräumen.':'';
+  $('kit-del').disabled=selAtom==null;
   $('kit-fill').disabled=!ed.atoms.some((a,i)=>a!=='H'&&!METAL.has(a)&&freeOf(i)>0);
   $('kit-undo').disabled=!edHist.length; $('kit-clear').disabled=!n;
-}
-
-function refreshLab(){
-  const n=ed.atoms.length; tray=countsOf(ed.atoms);
-  [...kit.children].forEach(b=>{ const el=b.dataset.el, sp=b.querySelector('span'); sp.hidden=!tray[el]; sp.textContent=tray[el]||''; b.disabled=n>=MAX_ATOMS; });
-  $('tray').textContent=n?countList(tray)+(n>=MAX_ATOMS?`  (max. ${MAX_ATOMS})`:''):''; $('tray').hidden=!n;
-  if(edSel!=null&&edSel>=n) edSel=null;
-  const msg=$('kit-msg'); msg.className='msg';
-  if(!n){
-    molCur=null; lab=null; clearMol(); edCamKept=false;
-    setPanel({name:'Molekül-Labor',desc:`<div class="label">So geht's</div>Tippe oben ein Atom an, um zu starten. Danach bestimmst du selbst, wo es weitergeht: <b>Atom im Bild antippen</b> = auswählen, neue Atome docken dort an. <b>Bindung antippen</b> = Einfach → Doppel → Dreifach. Jedes Atom will eine bestimmte Zahl Bindungen: <b>H</b> 1 · <b>O</b> 2 · <b>N</b> 3 · <b>C</b> 4.`});
-    msg.textContent='Der Baukasten ist leer.'; renderList(); afterBuild(); refreshSel(); return;
-  }
-  const free=ed.atoms.map((_,i)=>freeOf(i)), comps=components(), open=free.reduce((a,b)=>a+b,0);
-  const valid=n>=2&&open===0&&comps===1;
-  const {known,isomerOf}=valid?matchKnown(ed.atoms,ed.bonds,tray):{known:null,isomerOf:null};
-  const key=wlKey(ed.atoms,ed.bonds), seed=hashStr(key);
-  edPos=molLayout(ed.atoms,ed.bonds,seed,edPos.length===n?edPos:null);
-  const lattice=!!(known&&known.id==='nacl');
-  const st=lattice?known.build():graphStruct(ed.atoms,ed.bonds,free,null,seed,edPos);
-  st.charges=lattice?st.a.map(r=>r[0]==='Na'?1:-1):lewisInfo(ed,free).map((f,i)=>hasKind(i,'ion')?f.charge:0);
-  buildMol(st,{keepCam:edCamKept&&!lattice,pick:!lattice}); edCamKept=!lattice;
-  const allMetal=ed.atoms.every(a=>METAL.has(a));
-  lab={atoms:lattice?st.a.map(r=>r[0]):ed.atoms.slice(),bonds:lattice?st.b:ed.bonds.map(b=>b.slice()),free:lattice?null:free,valid,known,key,lattice};
-  const els=KIT.filter(k=>tray[k]);
-  if(known){
-    const isNew=!found.has(known.id); found.add(known.id); saveFound(); molCur=known; setPanel(knownPanel(known));
-    msg.className=isNew?'msg new':'msg ok';
-    msg.textContent=(isNew?`🎉 Neu entdeckt: ${known.name}! (${found.size} von ${MOLS.length})`:`Passt! Das ist ${known.name}.`)+(lattice?' Im Kristall wechseln sich Na⁺ und Cl⁻ ab – mit «Zurück» geht’s weiter.':'');
-  } else if(valid&&allMetal){
-    molCur=null; msg.className='msg ok'; const kinds=KIT.filter(k=>tray[k]);
-    msg.textContent=kinds.length>1?'Eine Legierung – Metalle gemischt, zusammengehalten von der Metallbindung.':'Ein Stück Metall – zusammengehalten von der Metallbindung.';
-    setPanel({name:kinds.length>1?'Legierung':ELS[kinds[0]].name+' (Metall)',f:formulaOf(tray),els:kinds,
-      desc:`<div class="label">Metallbindung</div>Metallatome geben ihre Aussenelektronen in einen gemeinsamen «See» ab (die blauen Punkte). Die positiven Atomrümpfe halten in diesem Elektronengas zusammen. Weil die Elektronen frei wandern, leiten Metalle Strom und Wärme und lassen sich verformen, ohne zu zerbrechen.`,
-      facts:[['Bindungen',bondFacts(ed.atoms,ed.bonds)],['Atome',countList(tray)]]});
-  } else if(valid){
-    molCur=null; msg.className='msg ok';
-    msg.textContent=isomerOf?`Chemisch möglich – ein Isomer von ${isomerOf.name}: gleiche Atome, aber anders verknüpft!`:'Chemisch möglich! Alle Bindungen sind besetzt.';
-    setPanel({name:isomerOf?'Isomer von '+isomerOf.name:'Eigenes Molekül',f:formulaOf(tray),els,
-      desc:isomerOf?`<div class="label">Isomer</div>Du hast dieselben Atome wie bei <b>${isomerOf.name}</b> (${isomerOf.f}) verwendet, sie aber anders verknüpft. Solche Moleküle heissen Isomere – sie haben oft ganz andere Eigenschaften.`
-        :`<div class="label">Was steckt dahinter?</div>Jedes Atom hat genau so viele Bindungen, wie es braucht. Dieses Molekül ist nicht in der Sammlung – aber du hast es selbst konstruiert!`,
-      facts:[['Bindungen',bondFacts(ed.atoms,ed.bonds)],['Atome',countList(tray)],['Molare Masse',fmtMolMass(tray)]]});
-  } else {
-    molCur=null; msg.className='msg warn';
-    const parts=[];
-    if(n===1){ const v=VAL[ed.atoms[0]][0];
-      parts.push(METAL.has(ed.atoms[0])?`${atomName(0)} ist ein Metall: Es gibt ${v} Elektron${v>1?'en':''} an ein Nichtmetall ab (Ionenbindung) – oder verbindet sich mit weiteren Metallatomen (Metallbindung).`
-        :`${atomName(0)} allein ist noch kein Molekül – es will ${v} Bindung${v>1?'en':''} eingehen.`); }
-    else if(open) parts.push(`Noch ${open} freie Bindung${open>1?'en':''} (gelbe Punkte). Wähle ein Atom und docke etwas an – oder «H auffüllen».`);
-    if(comps>1) parts.push('Nicht alle Teile hängen zusammen: Atom wählen, «Verbinden» und das andere Atom antippen.');
-    msg.textContent=parts.join(' ');
-    setPanel({name:'Im Bau …',f:formulaOf(tray),els,stubs:open>0,facts:[['Atome',countList(tray)],['Freie Bindungen',open]]});
-  }
-  // Isomere und Statistik für die Abzeichen
-  if(valid&&!lattice&&!ed.atoms.some(a=>METAL.has(a))&&recordIsomer(tray,key)){ msg.textContent+=' 🔀 Neue Anordnung dieser Atome entdeckt!'; }
-  if(valid){ let ch=false;
-    if(!stats.ring&&!allMetal&&ringCount({atoms:ed.atoms,bonds:ed.bonds})>0){ stats.ring=1; ch=true; }
-    if(!stats.triple&&ed.bonds.some(b=>b[2]===3&&kindOf(b)==='cov')){ stats.triple=1; ch=true; }
-    if(!stats.metal&&allMetal){ stats.metal=1; ch=true; }
-    if(ch) saveStats(); }
-  $('kit-iso').disabled=n<2;
-  renderList(); afterBuild(); refreshSel(); chalCheck(); checkBadges();
 }
 function renderList(){
   const list=MOLS.filter(m=>found.has(m.id));
@@ -1620,14 +1801,153 @@ function renderList(){
     :'<div class="empty">Noch nichts entdeckt. Bau dein erstes Molekül – zum Beispiel aus 2 H und 1 O.</div>';
   $('mol-list').querySelectorAll('button').forEach(b=>b.onclick=()=>loadMol(b.dataset.id));
 }
-/* Ein entdecktes Molekül in den Editor laden – danach kann man es weiter umbauen */
-function loadMol(id){
-  const m=MOLS.find(x=>x.id===id); if(!m||!found.has(id)) return;
-  const g=graphOfKnown(m); setGraph(g.atoms,g.bonds,g.pos);
+/* ein entdecktes Molekül aufs Feld legen */
+function loadMol(id){ const m=MOLS.find(x=>x.id===id); if(!m||!found.has(id)) return; const g=graphOfKnown(m); setGraph(g.atoms,g.bonds); }
+$('kit-undo').onclick=()=>{ const s=edHist.pop(); if(!s) return; const o=JSON.parse(s); ed={atoms:o.a,bonds:o.b}; edXY=o.xy; selAtom=null; refreshLab(); };
+$('kit-clear').onclick=()=>{ if(!ed.atoms.length) return; snap(); edReset(); refreshLab(); };
+$('kit-del').onclick=()=>{ if(selAtom!=null) removeAtom(selAtom); };
+$('kit-fill').onclick=fillH;
+$('kit-3d').onclick=()=>{ if(lab&&lab.idx&&lab.idx.length>=2) open3D(lab.idx); };
+$('kit-tip').onclick=()=>{
+  const rest=MOLS.filter(m=>!found.has(m.id)).sort((a,b)=>atomTotal(a.counts)-atomTotal(b.counts));
+  if(!rest.length){ say('Du hast alle Moleküle entdeckt – stark!','msg ok'); return; }
+  const m=rest[Math.floor(Math.random()*Math.min(5,rest.length))]; say(`💡 Versuch mal: ${countList(m.counts)}`);
+};
+$('m-back').onclick=()=>close3D();
+
+/* ---------- 3D-Ansicht eines Moleküls ---------- */
+function showStage(){
+  const boardMode=(labMode==='build'||labMode==='level')&&!viewerOn;
+  bc.hidden=!boardMode; $('m-views').hidden=!viewerOn;
+  if(boardMode){ mc.hidden=true; lcv.hidden=true; $('m-info').hidden=true;
+    $('m-cap').innerHTML='<span><b style="background:#fff"></b>Punkt = freies Elektron</span><span>Atom ziehen = bewegen</span><span>auf den Baukasten ziehen = wegräumen</span>'; }
+}
+function open3D(idx){
+  const ci=compInfos.find(c=>c.idx.length===idx.length&&c.idx.every((v,k)=>v===idx[k]))||compInfos.find(c=>c.idx.includes(idx[0])); if(!ci) return;
+  viewerOn=true; showStage(); mc.hidden=false; sizeGL(mRenderer,mCam,mc);
+  const lattice=!!(ci.known&&ci.known.id==='nacl');
+  const st=lattice?ci.known.build():graphStruct(ci.g.atoms,ci.g.bonds,ci.free,null,hashStr(ci.key));
+  st.charges=lattice?st.a.map(r=>r[0]==='Na'?1:-1):lewisInfo(ci.g,ci.free).map((f,i)=>ci.g.bonds.some(([a,b])=>(a===i||b===i)&&bondKind(ci.g.atoms[a],ci.g.atoms[b])==='ion')?f.charge:0);
+  lab={atoms:lattice?st.a.map(r=>r[0]):ci.g.atoms,bonds:lattice?st.b:ci.g.bonds,free:lattice?null:ci.free,valid:ci.valid,known:ci.known,key:ci.key,lattice,idx:ci.idx};
+  buildMol(st,{pick:false}); afterBuild();
+}
+function close3D(){ viewerOn=false; clearMol(); showStage(); refreshLab(); }
+
+/* =====================================================================
+   Aufgaben: Level mit Sammelkisten (wie PhET), Hilfen statt Zeitdruck
+   ===================================================================== */
+const LEVELS=[
+  {id:'l1',n:'Erste Bindungen',intro:'Zieh ein Atom nah an ein anderes: Haben beide freie Elektronen (Punkte), verbinden sie sich. Ein Molekül ist fertig, wenn keine Punkte mehr übrig sind.',
+    boxes:[['h2',1,'Leg die beiden H-Atome nebeneinander.'],['hcl',1,'H und Cl haben je einen Punkt – zusammenschieben.'],['h2o',1,'O hat zwei Punkte: An jeden kommt ein H.']]},
+  {id:'l2',n:'Das Zentralatom',intro:'Das Atom mit den meisten Punkten kommt in die Mitte. Die anderen hängst du rundherum an.',
+    boxes:[['nh3',1,'N in die Mitte, drei H rundherum.'],['ch4',1,'C hat vier Punkte – also vier H.'],['h2s',1,'Wie Wasser, nur mit S statt O.']]},
+  {id:'l3',n:'Doppelbindungen',intro:'Bleiben zwischen zwei verbundenen Atomen auf beiden Seiten Punkte übrig, tippe die Bindung an: Aus der Einfach- wird eine Doppelbindung.',
+    boxes:[['o2',1,'Zwei O verbinden, dann die Bindung antippen.'],['co2',1,'C in die Mitte, je ein O links und rechts – beide Bindungen antippen.'],['c2h4',1,'Erst C–C antippen (C=C), dann an jedes C zwei H.']]},
+  {id:'l4',n:'Dreifachbindungen',intro:'Tippst du eine Bindung zweimal an, wird sie dreifach.',
+    boxes:[['n2',1,'Zwei N verbinden, Bindung zweimal antippen.'],['c2h2',1,'C≡C, dann an jedes C ein H.'],['hcn',1,'C in die Mitte: H–C≡N.']]},
+  {id:'l5',n:'Mengen',intro:'Die Zahl vor der Formel sagt, wie viele Moleküle gemeint sind: 2 H₂O sind zwei einzelne Wassermoleküle.',
+    boxes:[['h2o',2,'Baue zwei getrennte Wassermoleküle.'],['o2',2,'Zwei einzelne O₂.']]},
+  {id:'l6',n:'Ketten & Alkohole',intro:'Kohlenstoff bildet Ketten. Sitzt eine O–H-Gruppe daran, ist es ein Alkohol. Tipp: Erst das Gerüst bauen, dann «H auffüllen».',
+    boxes:[['c2h6',1,'C–C bauen, dann «H auffüllen».'],['ch3oh',1,'C–O bauen, dann «H auffüllen».'],['ethanol',1,'C–C–O bauen, dann «H auffüllen».']]},
+  {id:'l7',n:'Isomere',intro:'Dieselben Atome lassen sich verschieden verknüpfen. Solche Moleküle heissen Isomere – und haben andere Eigenschaften.',
+    boxes:[['ethanol',1,'C–C–O, dann H auffüllen.'],['ether',1,'Diesmal kommt O in die Mitte: C–O–C.'],['c4h10',1,'Vier C in einer Reihe.'],['isobutan',1,'Drei C hängen am mittleren C.']]},
+  {id:'l8',n:'Ringe',intro:'Ein Ring entsteht, wenn du die Enden einer Kette verbindest: ein Ende antippen, dann das andere Ende antippen.',
+    boxes:[['c6h6',1,'Sechs C zur Kette, Enden verbinden, jede zweite Bindung antippen (doppelt), dann H auffüllen.']]},
+  {id:'l9',n:'Ionen',intro:'Metalle teilen keine Elektronen – sie geben sie ab. Leg ein Metall neben ein Nichtmetall: Das Elektron springt hinüber, es entstehen + und − Ionen.',
+    boxes:[['nacl',1,'Na neben Cl legen.'],['mgo',1,'Mg neben O legen und die Bindung antippen: Mg gibt zwei Elektronen ab.'],['cacl2',1,'Ca in die Mitte, an jede Seite ein Cl.']]},
+  {id:'l10',n:'Profi',intro:'Jetzt alles zusammen: Zentralatome, Doppelbindungen, H auffüllen.',
+    boxes:[['urea',1,'C in die Mitte: ein =O und zwei N, dann H auffüllen.'],['acetic',1,'C–C, am zweiten C ein =O und ein O, dann H auffüllen.'],['h2so4',1,'S in die Mitte, vier O; zwei Bindungen antippen (=O), dann H auffüllen.']]},
+  {id:'r1',n:'Bonus: Rätsel',riddle:true,intro:'Welches Molekül ist gemeint? Wenn du nicht weiterweisst: 💡 Hilfe verrät die Formel.',
+    boxes:[['h2s',1,'riecht nach faulen Eiern'],['c4h10',1,'steckt in Feuerzeugen'],['ethanol',1,'der Alkohol in Wein und Bier'],['co2',1,'das Gas, das du ausatmest']]}
+];
+const LVL_KEY='periodensystem3d-level';
+let lvlStars={}; try{ lvlStars=JSON.parse(localStorage.getItem(LVL_KEY)||'{}')||{}; }catch(_){}
+let lvl=null, boards={build:null,level:null};
+const molById=id=>MOLS.find(m=>m.id===id);
+const lvlUnlocked=i=>{ if(i===0) return true; if(LEVELS[i].riddle) return Object.keys(lvlStars).length>=3; return !!lvlStars[LEVELS[i-1].id]; };
+function startLevel(i){
+  const def=LEVELS[i], supply={};
+  def.boxes.forEach(([id,n])=>Object.entries(molById(id).counts).forEach(([k,v])=>supply[k]=(supply[k]||0)+v*n));
+  lvl={i,def,boxes:def.boxes.map(([id,n,hint])=>({id,n,got:0,hint})),supply,collected:{},hints:0,ghost:null,wrong:0,told:new Set(),done:false};
+  edReset(); edHist=[]; renderLevel(); refreshLab(); say(`Los geht's: Bau, was in den Kisten steht – in beliebiger Reihenfolge.`);
+}
+function curBox(){ return lvl&&lvl.boxes.find(b=>b.got<b.n); }
+function renderLevel(){
+  if(!lvl) return; const def=lvl.def, cb=curBox();
+  $('lvl-panel').innerHTML=`<div class="lvl-path">${LEVELS.map((L,i)=>`<button data-i="${i}" aria-pressed="${i===lvl.i}" ${lvlUnlocked(i)?'':'disabled'} title="${L.n}">${L.riddle?'★':i+1}<small>${'★'.repeat(lvlStars[L.id]||0)||'&nbsp;'}</small></button>`).join('')}</div>
+    <h3>${def.riddle?'':'Level '+(lvl.i+1)+' · '}${def.n}</h3>
+    <div class="fact">${def.intro}</div>
+    <div class="label">Sammelkisten – bau, was hier verlangt wird</div>
+    <div class="boxes">${lvl.boxes.map(b=>{ const m=molById(b.id), shown=!def.riddle||b.got>=b.n||(b===cb&&lvl.hints>0);
+      return `<div class="box ${b.got>=b.n?'done':b===cb?'cur':''}" data-id="${b.id}"><b>${shown?(b.n>1?b.n+' ':'')+m.f:'?'}</b><span>${def.riddle?(shown?m.name+' – ':'')+b.hint:m.name}</span><i>${b.got>=b.n?'✓':b.got+' / '+b.n}</i></div>`; }).join('')}</div>
+    <div class="mini"><button id="lvl-hint">💡 Hilfe${lvl.hints?` (${lvl.hints})`:''}</button><button id="lvl-restart">↺ Neu starten</button>${lvl.done&&lvl.i<LEVELS.length-1?'<button id="lvl-next">Weiter →</button>':''}</div>`;
+  $('lvl-panel').querySelectorAll('.lvl-path button').forEach(b=>b.onclick=()=>startLevel(+b.dataset.i));
+  $('lvl-hint').onclick=levelHint; $('lvl-restart').onclick=()=>startLevel(lvl.i);
+  if($('lvl-next')) $('lvl-next').onclick=()=>startLevel(lvl.i+1);
+  $('m-name').textContent='Aufgaben'; $('m-formula').textContent=`${Object.keys(lvlStars).length} von ${LEVELS.length} Leveln geschafft · ${Object.values(lvlStars).reduce((a,b)=>a+b,0)} ★`;
+}
+function boxMatches(b,ci){ const m=molById(b.id); if(!ci.valid) return false;
+  if(ci.g.atoms.some(a=>METAL.has(a))) return countsKey(ci.counts)===countsKey(m.counts);
+  return ci.key===m.wl; }
+let collecting=false;
+function levelCheck(){
+  if(!lvl||lvl.done||collecting) return;
+  const fa=selAtom??focusAtom;
+  for(const ci of compInfos){
+    if(!ci.valid) continue;
+    const b=lvl.boxes.find(bx=>bx.got<bx.n&&boxMatches(bx,ci));
+    if(b){ ci.match=b; collecting=true; const m=molById(b.id);
+      say(`✓ ${m.name} – ab in die Kiste!`,'msg new');
+      setTimeout(()=>{ collecting=false; if(!lvl) return;
+        const pts=ci.idx.map(i=>toScr(edXY[i])).filter(Boolean); if(pts.length) flashes.push({x:pts.reduce((s,p)=>s+p[0],0)/pts.length,y:Math.min(...pts.map(p=>p[1])),txt:'+1 '+m.f,t:0});
+        Object.entries(ci.counts).forEach(([k,v])=>lvl.collected[k]=(lvl.collected[k]||0)+v);
+        removeComp(ci.idx); b.got++; renderLevel(); const el=$('lvl-panel').querySelector(`.box[data-id="${b.id}"]`); if(el) el.classList.add('flash');
+        if(!curBox()) finishLevel(); else { say(`Super! Weiter mit: ${lvl.def.riddle?'dem nächsten Rätsel':molById(curBox().id).name}.`,'msg ok'); refreshLab(); } },700);
+      return; }
+    if(!lvl.told.has(ci.key)){ lvl.told.add(ci.key); lvl.wrong++;
+      const target=lvl.boxes.find(bx=>bx.got<bx.n&&countsKey(molById(bx.id).counts)===countsKey(ci.counts));
+      const want=lvl.def.riddle?'etwas anderes':molById(curBox().id).name;
+      say(target?`Gleiche Atome, aber anders verknüpft – gesucht ist ${lvl.def.riddle?'eine andere Anordnung':molById(target.id).name}. Atom antippen, ✂ trennen, neu verbinden.`
+        :ci.known?`Das ist ${ci.known.name} – schön, aber gesucht ist ${want}. Zieh es zurück auf den Baukasten.`
+        :`Ein fertiges Molekül – aber gesucht ist ${want}. Zieh es zurück auf den Baukasten.`,'msg warn');
+      if(lvl.wrong>=2&&!lvl.hints) $('kit-msg').textContent+=' 💡 Tipp: Drück auf «Hilfe».';
+      return; }
+  }
+  const cb=curBox();
+  if(!ed.atoms.length) return;
+  const fc=compInfos.find(c=>c.idx.includes(fa));
+  if(fc&&!fc.valid) say(`Noch ${fc.open} freie${fc.open===1?'s':''} Elektron${fc.open===1?'':'en'} (Punkte) bei ${fc.formula}.`);
+}
+function levelHint(){
+  const b=curBox(); if(!b) return; lvl.hints++;
+  if(lvl.hints===1) say(`💡 ${lvl.def.riddle?'Gesucht ist '+molById(b.id).f+' ('+molById(b.id).name+').':b.hint}`,'msg');
+  else { lvl.ghost=b.id; say('💡 Die Vorlage siehst du jetzt oben links auf der Fläche.','msg'); }
+  renderLevel();
+}
+const ghostCache={};
+function drawLevelGhost(x,W,H){
+  if(labMode!=='level'||!lvl||!lvl.ghost) return;
+  const m=molById(lvl.ghost), g=graphOfKnown(m);
+  if(!ghostCache[m.id]){ const info=g.atoms.map(()=>({pairs:0,rad:0})); const P3=g.bonds.length>=g.atoms.length?molLayout(g.atoms,g.bonds,hashStr(m.id)).map(p=>new THREE.Vector3(...p)):null; ghostCache[m.id]=layout2D(g,info,hashStr(m.id),P3).P; }
+  const P=ghostCache[m.id], xs=P.map(p=>p[0]), ys=P.map(p=>p[1]), bw=Math.max(...xs)-Math.min(...xs)||1, bh=Math.max(...ys)-Math.min(...ys)||1, sc=Math.min(26,150/bw,110/bh);
+  const ox=20-Math.min(...xs)*sc+8, oy=60+Math.max(...ys)*sc+8, Q=P.map(p=>[ox+p[0]*sc,oy-p[1]*sc]);
+  x.fillStyle='rgba(10,13,19,.75)'; rrect(x,14,48,bw*sc+30,bh*sc+40,10); x.fill(); x.strokeStyle='#ffd23f66'; x.stroke();
+  x.globalAlpha=.85; g.bonds.forEach(([a,b,o])=>{ const [x1,y1]=Q[a],[x2,y2]=Q[b], L=Math.hypot(x2-x1,y2-y1)||1, nx=-(y2-y1)/L, ny=(x2-x1)/L, kd=bondKind(g.atoms[a],g.atoms[b]);
+    const offs=kd!=='cov'?[0]:o===1?[0]:o===2?[-2,2]:[-3.5,0,3.5]; x.strokeStyle=kd==='cov'?'#ffd23f':'#8c96aa'; x.lineWidth=1.6; x.setLineDash(kd==='cov'?[]:[3,3]);
+    offs.forEach(f=>{ x.beginPath(); x.moveTo(x1+nx*f,y1+ny*f); x.lineTo(x2+nx*f,y2+ny*f); x.stroke(); }); x.setLineDash([]); });
+  x.font='700 11px "Space Grotesk", sans-serif'; x.textAlign='center'; x.textBaseline='middle';
+  g.atoms.forEach((a,i)=>{ x.fillStyle='#0a0d13'; x.beginPath(); x.arc(Q[i][0],Q[i][1],7,0,Math.PI*2); x.fill(); x.fillStyle='#ffd23f'; x.fillText(a,Q[i][0],Q[i][1]+.5); });
+  x.globalAlpha=1; x.fillStyle='#ffd23f'; x.font='600 10px Inter, sans-serif'; x.textAlign='left'; x.fillText('VORLAGE',20,56);
+}
+function finishLevel(){
+  const stars=Math.max(1,3-lvl.hints); lvl.done=true;
+  lvlStars[lvl.def.id]=Math.max(lvlStars[lvl.def.id]||0,stars); try{ localStorage.setItem(LVL_KEY,JSON.stringify(lvlStars)); }catch(_){}
+  renderLevel(); refreshLab();
+  say(`🏆 Level geschafft! ${'★'.repeat(stars)}${'☆'.repeat(3-stars)}${stars<3?' – ohne Hilfe gibt es 3 Sterne.':''}`,'msg new'); toast(`🏆 ${lvl.def.n}: ${'★'.repeat(stars)}`); checkBadges();
 }
 function openMol(id){
   molOpen=true; molWrap.hidden=false; sizeGL(mRenderer,mCam,mc);
-  if(id&&found.has(id)){ setLabMode('build',true); loadMol(id); } else setLabMode(labMode);
+  if(id&&found.has(id)){ setLabMode('build'); loadMol(id); } else setLabMode(labMode);
   checkBadges(); $('m-close').focus({preventScroll:true});
 }
 function closeMol(){ molOpen=false; molWrap.hidden=true; if(chal) chalStop(); stopReaction(); stopHB(); clearMol(); canvas.focus({preventScroll:true}); }
@@ -1820,10 +2140,11 @@ function buildPolarity(){
   $('m-info').hidden=false;
 }
 function afterBuild(){
-  const lewis=mView==='lewis'&&labMode==='build';
+  if(!viewerOn) return;                         // nur in der 3D-Ansicht eines Moleküls
+  const lewis=mView==='lewis';
   lcv.hidden=!lewis; mc.hidden=lewis; $('m-info').hidden=true;
   if(polGroup){ disposeGroup(polGroup); polGroup=null; }
-  if(labMode!=='build') return;
+  $('m-cap').innerHTML=(lab?KIT.filter(k=>lab.atoms.includes(k)):[]).map(k=>`<span><b style="background:${CPK[k][0]}"></b>${ELS[k].name}</span>`).join('')+'<span>ziehen = drehen</span>';
   applyKalotte(mView==='kal');
   if(molObj) molObj.children.forEach(c=>{ if(c.userData&&c.userData.charge) c.visible=mView!=='pol'; });
   if(mView==='kal'&&lab){ $('m-info').innerHTML='<b>Kalottenmodell</b>: Jede Kugel hat die echte Grösse ihres Atoms (Van-der-Waals-Radius, bei Ionen der Ionenradius). Die Atome überlappen sich dort, wo sie gebunden sind – so «voll» ist ein Molekül wirklich.'; $('m-info').hidden=false; }
@@ -1927,15 +2248,23 @@ function showReaction(r){
 }
 $('rx-play').onclick=()=>{ if(rxCur) showReaction(rxCur); };
 function setLabMode(m,silent){
-  labMode=m;
+  // Baufläche je Modus merken (Bauen und Aufgaben haben getrennte Flächen)
+  if((labMode==='build'||labMode==='level')&&labMode!==m) boards[labMode]={ed:JSON.parse(JSON.stringify(ed)),xy:edXY.map(p=>p.slice()),hist:edHist.slice()};
+  const prev=labMode; labMode=m; viewerOn=false;
   document.querySelectorAll('#m-modes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));
-  $('sec-build').hidden=m!=='build'; $('sec-react').hidden=m!=='react'; $('sec-hb').hidden=m!=='hb'; $('m-views').hidden=m!=='build';
-  if(m!=='build'){ if(chal) chalStop(); lcv.hidden=true; mc.hidden=false; $('m-info').hidden=true; clearMol(); }
+  const boardMode=m==='build'||m==='level';
+  $('sec-build').hidden=!boardMode; $('sec-react').hidden=m!=='react'; $('sec-hb').hidden=m!=='hb';
+  $('lvl-panel').hidden=m!=='level'; $('build-extra').hidden=m!=='build'; $('kit-label').textContent=m==='level'?'Vorrat · ins Feld ziehen oder antippen':'Atome · ins Feld ziehen oder antippen';
+  if(chal) chalStop(); lcv.hidden=true; $('m-info').hidden=true; clearMol();
   if(m!=='hb') stopHB();
+  if(!boardMode){ bc.hidden=true; $('m-views').hidden=true; mc.hidden=false; }
   if(m==='react'){ showReaction(rxCur||RXS[0]); renderRxB(); }
   else if(m==='hb'){ stopReaction(); buildHB(); $('m-name').textContent='Wasserstoffbrücken'; $('m-formula').textContent='12 × H₂O';
     $('m-cap').innerHTML='<span><b style="background:#ff4a3d"></b>Sauerstoff δ−</span><span><b style="background:#f4f6fa"></b>Wasserstoff δ+</span><span><b style="background:#ffd23f"></b>Wasserstoffbrücke</span><span>ziehen = drehen</span>'; }
-  else { stopReaction(); if(!silent) refreshLab(); }
+  else { stopReaction(); showStage();
+    if(prev!==m||!ed){ const b=boards[m]; if(b){ ed=b.ed; edXY=b.xy; edHist=b.hist; } else { edReset(); edHist=[]; } selAtom=null; focusAtom=null; }
+    if(m==='level'){ if(!lvl){ const first=LEVELS.findIndex(L=>!lvlStars[L.id]&&!L.riddle); startLevel(first<0?0:first); } else { renderLevel(); refreshLab(); } }
+    else if(!silent) refreshLab(); }
 }
 document.querySelectorAll('#m-modes button').forEach(b=>b.onclick=()=>setLabMode(b.dataset.m));
 
@@ -2029,7 +2358,6 @@ function chalFinish(){
   chal.locked=true; checkBadges();
 }
 function chalStop(){ clearInterval(chalTimer); chalTimer=null; chal=null; $('chal').hidden=true; }
-$('ch-start').onclick=chalStart;
 
 /* =====================================================================
    Teilen-Link: #m=C2H6O1 – der Empfänger sieht genau dasselbe Molekül
@@ -2088,13 +2416,14 @@ function enumerateIsomers(counts){
   return isoCache[ck]=[...seen.values()].sort((a,b)=>((MOLS.some(m=>m.wl===b.key))-(MOLS.some(m=>m.wl===a.key)))||a.score-b.score);
 }
 $('kit-iso').onclick=()=>{
-  if(ed.atoms.length<2) return;
-  if(ed.atoms.some(a=>METAL.has(a))){ warn('Bei Ionenverbindungen und Metallen gibt es keine Isomere im engeren Sinn – es zählt nur, wer Elektronen abgibt.'); return; }
-  const list=enumerateIsomers(tray);
+  if(!lab||!lab.idx||lab.idx.length<2) return;
+  if(lab.atoms.some(a=>METAL.has(a))){ warn('Bei Ionenverbindungen und Metallen gibt es keine Isomere im engeren Sinn – es zählt nur, wer Elektronen abgibt.'); return; }
+  const counts=countsOf(lab.atoms), list=enumerateIsomers(counts);
   if(!list.length){ warn('Mit genau diesen Atomen lässt sich kein fertiges Molekül bauen – füge Atome hinzu oder nimm welche weg.'); return; }
-  const cur=wlKey(ed.atoms,ed.bonds), idx=list.findIndex(x=>x.key===cur);
+  const idx=list.findIndex(x=>x.key===lab.key);
   if(list.length===1&&idx===0){ warn('Mit diesen Atomen gibt es nur diese eine Anordnung.'); return; }
-  const next=list[(idx+1)%list.length]; setGraph(next.atoms,next.bonds,null);
+  const next=list[(idx+1)%list.length];
+  removeComp(lab.idx); setGraph(next.atoms,next.bonds); edHist.pop();     // ersetzt das Molekül (ein Schritt zum Zurücknehmen)
   $('kit-sel').textContent=`🔀 Anordnung ${list.indexOf(next)+1} von ${list.length} – gleiche Atome, anders verknüpft.`;
 };
 
@@ -2135,8 +2464,10 @@ const BADGES=[
   {id:'hb',e:'💧',n:'Brückenbauer',d:'Wasserstoffbrücken erkundet',p:()=>[stats.hb,1]},
   {id:'rx5',e:'💥',n:'Reaktions-Fan',d:'5 Reaktionen angeschaut',p:()=>[stats.rx.length,5]},
   {id:'myrx',e:'⚖️',n:'Eigene Reaktion',d:'Eigene Reaktion ausgeglichen',p:()=>[stats.customRx,1]},
-  {id:'c500',e:'🥉',n:'Challenge 500',d:'500 Punkte in einer Runde',p:()=>[bestScore(),500]},
-  {id:'c1000',e:'🏆',n:'Challenge 1000',d:'1000 Punkte in einer Runde',p:()=>[bestScore(),1000]}
+  {id:'lvl5',e:'🎯',n:'Halbzeit',d:'5 Aufgaben-Level geschafft',p:()=>[LEVELS.filter(L=>!L.riddle&&lvlStars[L.id]).length,5]},
+  {id:'lvlall',e:'🏆',n:'Alle Level',d:'Alle 10 Level geschafft',p:()=>[LEVELS.filter(L=>!L.riddle&&lvlStars[L.id]).length,10]},
+  {id:'stars',e:'⭐',n:'Sterne-Sammler',d:'30 Sterne ohne Hilfe',p:()=>[Object.values(lvlStars).reduce((a,b)=>a+b,0),30]},
+  {id:'riddle',e:'🧩',n:'Rätselkönig',d:'Bonus-Rätsel gelöst',p:()=>[lvlStars.r1?1:0,1]}
 ];
 let toastT=null;
 function toast(t){ const el=$('m-toast'); el.textContent=t; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>el.hidden=true,3200); }
@@ -2208,7 +2539,7 @@ function speciesCounts(id){ if(id.startsWith('g:')) return countsOf(decGraph(id.
 function speciesLabel(id){ if(id.startsWith('g:')) return formulaOf(speciesCounts(id)); const m=MOLS.find(x=>x.id===id); return m?m.f:id; }
 function rxOptions(){
   const o=[];
-  if(ed.atoms.length&&lab&&lab.valid&&!lab.known) o.push(['g:'+encGraph(ed.atoms,ed.bonds),`Aus dem Baukasten: ${formulaOf(tray)}`]);
+  const seen=new Set(); (compInfos||[]).forEach(ci=>{ if(ci.valid&&!ci.known&&!seen.has(ci.key)){ seen.add(ci.key); o.push(['g:'+encGraph(ci.g.atoms,ci.g.bonds),`Aus dem Baukasten: ${ci.formula}`]); } });
   MOLS.filter(m=>found.has(m.id)).forEach(m=>o.push([m.id,`${m.f} · ${m.name}`]));
   KIT.forEach(s=>o.push([s,`${s} · ${ELS[s].name} (Atom)`]));
   return o;
@@ -2570,6 +2901,7 @@ function frame(now){
     else { if(aView==='bohr') updateAtom(dt,now/1000); else if(orbObj){ atomT+=dt; orbObj.scale.setScalar(Math.max(easeOut(atomT/0.9),0.01)); }
       aControls.update(); aRenderer.render(aScene,aCam); }
   }
+  if(molOpen&&(labMode==='build'||labMode==='level')&&!viewerOn) drawBoard(dt);
   if(molOpen){ if(rxState) rxTick(dt); if(hbState) hbTick(dt); if(molObj&&molObj.userData.tick) molObj.userData.tick(dt); if(molObj){ molT+=dt; molObj.scale.setScalar(Math.max(easeOut(molT/0.7),0.01)); } mControls.update(); mRenderer.render(mScene,mCam); }
   requestAnimationFrame(frame);
 }
