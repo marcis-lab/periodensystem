@@ -97,6 +97,8 @@ sub{line-height:0}
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") center/contain no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") center/contain no-repeat}
 .search input{background:transparent;border:0;color:var(--fg);font:400 13.5px var(--f-body);width:140px;padding:7px 0}
+/* Handy: mind. 16 px, sonst zoomt iOS beim Antippen ins Feld */
+@media (pointer:coarse){input,select,textarea{font-size:max(16px,1em)!important}}
 .search input::placeholder{color:var(--muted)}
 .search input:focus-visible{outline:0}
 .search:focus-within{outline:2px solid var(--blue);outline-offset:2px}
