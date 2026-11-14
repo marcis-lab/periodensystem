@@ -9,6 +9,7 @@ Langsam und mit eigenem User-Agent, wie Wikimedia es verlangt. Schon geladene Bi
 Aus Cloud-Sitzungen sperrt Wikimedia oft (Fehler 429), dann lokal ausführen.
 Aufruf im Repo-Ordner:  python3 tools/bilder-laden.py
 Einzelne Elemente neu laden:  python3 tools/bilder-laden.py Au Ne
+Nur Urheber-Angaben bereinigen:  python3 tools/bilder-laden.py --nachweis
 Bild bewusst ersetzen: in DATEI unten eine Commons-Datei eintragen und das Element neu laden.
 """
 import json, os, re, sys, time, html, urllib.parse, urllib.request, urllib.error
@@ -68,9 +69,35 @@ def strip(s):
     return re.sub(r'\s+', ' ', html.unescape(s)).strip()
 
 
+def kuenstler(s):
+    """Urheber-Angabe von Commons kürzen: Wiki-Reste («(talk)», «Original uploader was …») raus, Alchemist-hp vereinheitlichen."""
+    s = strip(s)
+    s = re.sub(r'\(talk\)|Contact email:.*$|\.?\s*Touched up by.*$', '', s)
+    s = re.sub(r'^\S+\.(jpe?g|png):\s*', '', s, flags=re.I)          # «Datei.jpg: Urheber»
+    s = re.sub(r'[“”"]', '', s)
+    s = re.sub(r'(The )?[Oo]riginal(ly)? upload(er was|ed by| by)\s*', '', s)
+    s = re.sub(r'\s+at (en|de)\.wikipedia\b\.?|\s+at English Wikipedia\.?', '', s)
+    s = re.sub(r'\s*derivative work:\s*', ', ', s)
+    s = re.sub(r'\s*\(see File:[^)]*\)', '', s)
+    s = re.sub(r'Alchemist-hp.*pse-mendelejew\.de\)?', 'Alchemist-hp (pse-mendelejew.de)', s)
+    s = re.sub(r'\s*\([^)]*$', '', s)                                  # offene Klammer am Ende
+    s = re.sub(r'\s+', ' ', s).strip(' .,=')
+    if not s or re.fullmatch(r'(Unknown author\s*)+|Unspecified|unknown', s, re.I):
+        return 'unbekannt'
+    return s[:120]
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     man = json.load(open(MANIFEST, encoding='utf-8')) if os.path.exists(MANIFEST) else {}
+    if sys.argv[1:] == ['--nachweis']:   # nur die Urheber-Angaben im Bildnachweis nachbereinigen, nichts laden
+        for sym, b in man.items():
+            neu = kuenstler(b['artist'])
+            if neu != b['artist']:
+                print(f'{sym}: {b["artist"]!r} -> {neu!r}')
+                b['artist'] = neu
+        json.dump(man, open(MANIFEST, 'w', encoding='utf-8'), ensure_ascii=False, indent=1, sort_keys=True)
+        return
     nur = set(sys.argv[1:])
     todo = [(s, t) for s, t in zip(SYM, EN) if s not in SKIP and ((s in nur) if nur else (s not in man or not os.path.exists(os.path.join(ROOT, man[s]['src'].lstrip('/')))))]
     print(f'{len(todo)} Fotos zu laden, {len(man)} schon vorhanden.', flush=True)
@@ -97,7 +124,7 @@ def main():
             open(os.path.join(OUT, name), 'wb').write(get(url, binary=True))
             man[sym] = {
                 'src': '/bilder/el/' + name,
-                'artist': strip(m.get('Artist', {}).get('value'))[:120] or 'unbekannt',
+                'artist': kuenstler(m.get('Artist', {}).get('value')),
                 'license': strip(m.get('LicenseShortName', {}).get('value')) or 'siehe Commons',
                 'page': ii.get('descriptionurl', ''),
                 'file': datei,

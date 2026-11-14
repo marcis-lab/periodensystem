@@ -7,14 +7,14 @@
   "src": "/bilder/el/Ac.png"
  },
  "Ag": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Silver_crystal.jpg",
   "license": "CC BY-SA 3.0 de",
   "page": "https://commons.wikimedia.org/wiki/File:Silver_crystal.jpg",
   "src": "/bilder/el/Ag.jpg"
  },
  "Al": {
-  "artist": "Unknown authorUnknown author",
+  "artist": "unbekannt",
   "file": "Aluminium-4.jpg",
   "license": "CC BY 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Aluminium-4.jpg",
@@ -28,21 +28,21 @@
   "src": "/bilder/el/Am.jpg"
  },
  "Ar": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Argon_discharge_tube.jpg",
   "license": "GFDL 1.2",
   "page": "https://commons.wikimedia.org/wiki/File:Argon_discharge_tube.jpg",
   "src": "/bilder/el/Ar.jpg"
  },
  "As": {
-  "artist": "Arsen_1.jpg: Original uploader was Tomihahndorf at de.wikipedia derivative work: Materialscientist (talk)",
+  "artist": "Tomihahndorf, Materialscientist",
   "file": "Arsen_1a.jpg",
   "license": "CC BY-SA 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Arsen_1a.jpg",
   "src": "/bilder/el/As.jpg"
  },
  "Au": {
-  "artist": "Alchemist-hp (talk) www.pse-mendelejew.de",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Gold-crystals.jpg",
   "license": "CC BY-SA 3.0 de",
   "page": "https://commons.wikimedia.org/wiki/File:Gold-crystals.jpg",
@@ -63,14 +63,14 @@
   "src": "/bilder/el/Ba.jpg"
  },
  "Be": {
-  "artist": "Alchemist-hp = Alchemist-hp (pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Be-140g.jpg",
   "license": "CC BY-SA 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Be-140g.jpg",
   "src": "/bilder/el/Be.jpg"
  },
  "Bi": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Bismuth_crystals_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Bismuth_crystals_and_1cm3_cube.jpg",
@@ -98,14 +98,14 @@
   "src": "/bilder/el/C.jpg"
  },
  "Ca": {
-  "artist": "Original upload by 范皓程",
+  "artist": "范皓程",
   "file": "Calcium_crystals_in_ampoule_cropped.jpg",
   "license": "CC BY 4.0",
   "page": "https://commons.wikimedia.org/wiki/File:Calcium_crystals_in_ampoule_cropped.jpg",
   "src": "/bilder/el/Ca.jpg"
  },
  "Cd": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Cadmium-crystal_bar.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Cadmium-crystal_bar.jpg",
@@ -119,7 +119,7 @@
   "src": "/bilder/el/Ce.jpg"
  },
  "Cf": {
-  "artist": "United States Department of Energy (see File:Einsteinium.jpg)",
+  "artist": "United States Department of Energy",
   "file": "Californium.jpg",
   "license": "Public domain",
   "page": "https://commons.wikimedia.org/wiki/File:Californium.jpg",
@@ -133,35 +133,35 @@
   "src": "/bilder/el/Cl.jpg"
  },
  "Co": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Kobalt_electrolytic_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Kobalt_electrolytic_and_1cm3_cube.jpg",
   "src": "/bilder/el/Co.jpg"
  },
  "Cr": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Chromium_crystals_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Chromium_crystals_and_1cm3_cube.jpg",
   "src": "/bilder/el/Cr.jpg"
  },
  "Cs": {
-  "artist": "Dnn87 Contact email: Dnn87yahoo.dk",
+  "artist": "Dnn87",
   "file": "Cesium.jpg",
   "license": "CC BY-SA 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Cesium.jpg",
   "src": "/bilder/el/Cs.jpg"
  },
  "Cu": {
-  "artist": "Native_Copper_Macro_Digon3.jpg: “Jonathan Zander (Digon3)\" derivative work: Materialscientist (talk)",
+  "artist": "Jonathan Zander (Digon3), Materialscientist",
   "file": "NatCopper.jpg",
   "license": "CC BY-SA 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:NatCopper.jpg",
   "src": "/bilder/el/Cu.jpg"
  },
  "Dy": {
-  "artist": "Materialscientist at en.wikipedia",
+  "artist": "Materialscientist",
   "file": "Dy_chips.jpg",
   "license": "CC BY-SA 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Dy_chips.jpg",
@@ -175,7 +175,7 @@
   "src": "/bilder/el/Er.jpg"
  },
  "Es": {
-  "artist": "Haire, R. G., US Department of Energy. Touched up by Materialscientist at en.wikipedia.",
+  "artist": "Haire, R. G., US Department of Energy",
   "file": "Einsteinium.jpg",
   "license": "Public domain",
   "page": "https://commons.wikimedia.org/wiki/File:Einsteinium.jpg",
@@ -196,7 +196,7 @@
   "src": "/bilder/el/F.jpg"
  },
  "Fe": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Iron_electrolytic_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Iron_electrolytic_and_1cm3_cube.jpg",
@@ -210,7 +210,7 @@
   "src": "/bilder/el/Ga.png"
  },
  "Gd": {
-  "artist": "Unknown authorUnknown author",
+  "artist": "unbekannt",
   "file": "Gadolinium-4.jpg",
   "license": "CC BY 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Gadolinium-4.jpg",
@@ -224,21 +224,21 @@
   "src": "/bilder/el/Ge.jpg"
  },
  "H": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Hydrogen_discharge_tube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Hydrogen_discharge_tube.jpg",
   "src": "/bilder/el/H.jpg"
  },
  "He": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Helium_discharge_tube.jpg",
   "license": "GFDL 1.2",
   "page": "https://commons.wikimedia.org/wiki/File:Helium_discharge_tube.jpg",
   "src": "/bilder/el/He.jpg"
  },
  "Hf": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Hf-crystal bar.jpg",
   "license": "CC BY-SA 3.0 de",
   "page": "https://commons.wikimedia.org/wiki/File:Hf-crystal_bar.jpg",
@@ -252,7 +252,7 @@
   "src": "/bilder/el/Hg.jpg"
  },
  "Ho": {
-  "artist": "Unknown authorUnknown author",
+  "artist": "unbekannt",
   "file": "Holmium2.jpg",
   "license": "CC BY 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Holmium2.jpg",
@@ -280,21 +280,21 @@
   "src": "/bilder/el/Ir.jpg"
  },
  "K": {
-  "artist": "Unknown authorUnknown author",
+  "artist": "unbekannt",
   "file": "Potassium-2.jpg",
   "license": "CC BY 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Potassium-2.jpg",
   "src": "/bilder/el/K.jpg"
  },
  "Kr": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Krypton_discharge_tube.jpg",
   "license": "GFDL 1.2",
   "page": "https://commons.wikimedia.org/wiki/File:Krypton_discharge_tube.jpg",
   "src": "/bilder/el/Kr.jpg"
  },
  "La": {
-  "artist": "Jurii (Original uploader was Lanthanum-138 at en.wikipedia",
+  "artist": "Jurii",
   "file": "Lanthanum-2.jpg",
   "license": "CC BY 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Lanthanum-2.jpg",
@@ -308,7 +308,7 @@
   "src": "/bilder/el/Li.png"
  },
  "Lu": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Lutetium_sublimed_dendritic_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Lutetium_sublimed_dendritic_and_1cm3_cube.jpg",
@@ -322,14 +322,14 @@
   "src": "/bilder/el/Mg.jpg"
  },
  "Mn": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Manganese_electrolytic_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Manganese_electrolytic_and_1cm3_cube.jpg",
   "src": "/bilder/el/Mn.jpg"
  },
  "Mo": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Molybdenum_crystaline_fragment_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Molybdenum_crystaline_fragment_and_1cm3_cube.jpg",
@@ -343,14 +343,14 @@
   "src": "/bilder/el/N.jpg"
  },
  "Na": {
-  "artist": "The original uploader was Dnn87 at English Wikipedia.",
+  "artist": "Dnn87",
   "file": "Na_(Sodium).jpg",
   "license": "CC BY-SA 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Na_(Sodium).jpg",
   "src": "/bilder/el/Na.jpg"
  },
  "Nb": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Niobium_crystals_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Niobium_crystals_and_1cm3_cube.jpg",
@@ -364,14 +364,14 @@
   "src": "/bilder/el/Nd.jpg"
  },
  "Ne": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Neon_discharge_tube.jpg",
   "license": "GFDL 1.2",
   "page": "https://commons.wikimedia.org/wiki/File:Neon_discharge_tube.jpg",
   "src": "/bilder/el/Ne.jpg"
  },
  "Ni": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Nickel_electrolytic_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Nickel_electrolytic_and_1cm3_cube.jpg",
@@ -392,7 +392,7 @@
   "src": "/bilder/el/O.jpg"
  },
  "Os": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Osmium_crystals.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Osmium_crystals.jpg",
@@ -413,7 +413,7 @@
   "src": "/bilder/el/Pa.jpg"
  },
  "Pb": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Lead_electrolytic_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Lead_electrolytic_and_1cm3_cube.jpg",
@@ -469,21 +469,21 @@
   "src": "/bilder/el/Rb.jpg"
  },
  "Re": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Rhenium_single_crystal_bar_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Rhenium_single_crystal_bar_and_1cm3_cube.jpg",
   "src": "/bilder/el/Re.jpg"
  },
  "Rh": {
-  "artist": "Alchemist-hp (talk) www.pse-mendelejew.de derivative work: Purpy Pupple (talk)",
+  "artist": "Alchemist-hp (pse-mendelejew.de), Purpy Pupple",
   "file": "Rhodium_powder_pressed_melted.jpg",
   "license": "CC BY-SA 3.0 de",
   "page": "https://commons.wikimedia.org/wiki/File:Rhodium_powder_pressed_melted.jpg",
   "src": "/bilder/el/Rh.jpg"
  },
  "Ru": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Ruthenium_a_half_bar.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Ruthenium_a_half_bar.jpg",
@@ -497,14 +497,14 @@
   "src": "/bilder/el/S.jpg"
  },
  "Sb": {
-  "artist": "Unknown authorUnknown author",
+  "artist": "unbekannt",
   "file": "Antimony-4.jpg",
   "license": "CC BY 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Antimony-4.jpg",
   "src": "/bilder/el/Sb.jpg"
  },
  "Sc": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Scandium_sublimed_dendritic_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Scandium_sublimed_dendritic_and_1cm3_cube.jpg",
@@ -525,35 +525,35 @@
   "src": "/bilder/el/Si.jpg"
  },
  "Sm": {
-  "artist": "Unknown authorUnknown author",
+  "artist": "unbekannt",
   "file": "Samarium-2.jpg",
   "license": "CC BY 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Samarium-2.jpg",
   "src": "/bilder/el/Sm.jpg"
  },
  "Sn": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Sn-Alpha-Beta.jpg",
   "license": "CC BY-SA 3.0 de",
   "page": "https://commons.wikimedia.org/wiki/File:Sn-Alpha-Beta.jpg",
   "src": "/bilder/el/Sn.jpg"
  },
  "Sr": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Strontium_destilled_crystals.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Strontium_destilled_crystals.jpg",
   "src": "/bilder/el/Sr.jpg"
  },
  "Ta": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Tantalum_single_crystal_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Tantalum_single_crystal_and_1cm3_cube.jpg",
   "src": "/bilder/el/Ta.jpg"
  },
  "Tb": {
-  "artist": "Unknown authorUnknown author",
+  "artist": "unbekannt",
   "file": "Terbium-2.jpg",
   "license": "CC BY 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Terbium-2.jpg",
@@ -567,14 +567,14 @@
   "src": "/bilder/el/Tc.jpg"
  },
  "Te": {
-  "artist": "Unknown authorUnknown author",
+  "artist": "unbekannt",
   "file": "Tellurium2.jpg",
   "license": "CC BY 3.0",
   "page": "https://commons.wikimedia.org/wiki/File:Tellurium2.jpg",
   "src": "/bilder/el/Te.jpg"
  },
  "Th": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Thorium_sample_0.1g.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Thorium_sample_0.1g.jpg",
@@ -595,42 +595,42 @@
   "src": "/bilder/el/Tl.jpg"
  },
  "Tm": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Thulium_sublimed_dendritic_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Thulium_sublimed_dendritic_and_1cm3_cube.jpg",
   "src": "/bilder/el/Tm.jpg"
  },
  "U": {
-  "artist": "Unspecified",
+  "artist": "unbekannt",
   "file": "HEUraniumC.jpg",
   "license": "Public domain",
   "page": "https://commons.wikimedia.org/wiki/File:HEUraniumC.jpg",
   "src": "/bilder/el/U.jpg"
  },
  "V": {
-  "artist": "Alchemist-hp (pse-mendelejew.de).",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Vanadium_crystal_bar_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Vanadium_crystal_bar_and_1cm3_cube.jpg",
   "src": "/bilder/el/V.jpg"
  },
  "W": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Wolfram_evaporated_crystals_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Wolfram_evaporated_crystals_and_1cm3_cube.jpg",
   "src": "/bilder/el/W.jpg"
  },
  "Xe": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Xenon_discharge_tube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Xenon_discharge_tube.jpg",
   "src": "/bilder/el/Xe.jpg"
  },
  "Y": {
-  "artist": "Alchemist-hp (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Yttrium_sublimed_dendritic_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Yttrium_sublimed_dendritic_and_1cm3_cube.jpg",
@@ -644,14 +644,14 @@
   "src": "/bilder/el/Yb.jpg"
  },
  "Zn": {
-  "artist": "Alchemist-hp (talk) (www.pse-mendelejew.de)",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Zinc_fragment_sublimed_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Zinc_fragment_sublimed_and_1cm3_cube.jpg",
   "src": "/bilder/el/Zn.jpg"
  },
  "Zr": {
-  "artist": "Alchemist-hp (pse-mendelejew.de).",
+  "artist": "Alchemist-hp (pse-mendelejew.de)",
   "file": "Zirconium_crystal_bar_and_1cm3_cube.jpg",
   "license": "FAL",
   "page": "https://commons.wikimedia.org/wiki/File:Zirconium_crystal_bar_and_1cm3_cube.jpg",
