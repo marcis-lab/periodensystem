@@ -411,6 +411,15 @@ dl.facts dd{margin:0;font-family:var(--f-mono);font-size:13px;font-variant-numer
 .bar [data-lexikon]{display:contents}
 .bar .lx-btn{align-self:stretch}
 </style>
+<style>
+/* Handy-Tempo: Auf dem Handy stehen die Farbwolken still und werden ohne Live-Weichzeichner gezeichnet (weicher Rand per Maske).
+   Sonst muss das Handy Wolken und Glas in jedem Bild neu berechnen: Seite lädt langsam und ruckelt. */
+@media (pointer: coarse) {
+  body::before { filter: none !important; animation: none !important; }
+  .grain { animation: none !important; }
+  .glass { -webkit-backdrop-filter: blur(12px) saturate(160%) !important; backdrop-filter: blur(12px) saturate(160%) !important; }
+}
+</style>
 </head>
 <body>
 
